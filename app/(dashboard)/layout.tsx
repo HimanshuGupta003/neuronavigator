@@ -4,10 +4,8 @@ import { useEffect, useState, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Brain, LogOut, Users, FileText, Home, Mic, ClipboardList, Bell, ChevronRight } from 'lucide-react';
+import { Brain, LogOut, Users, FileText, Home, Mic, ClipboardList, Bell } from 'lucide-react';
 import { Profile } from '@/lib/types';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import Button from '@/components/ui/Button';
 
 interface DashboardLayoutProps {
     children: ReactNode;
@@ -67,8 +65,31 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
-                <LoadingSpinner size="lg" text="Loading..." />
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f3f4f6'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                        width: '40px',
+                        height: '40px',
+                        border: '3px solid #6366f1',
+                        borderTopColor: 'transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        margin: '0 auto 16px auto'
+                    }} />
+                    <p style={{ color: '#6b7280' }}>Loading...</p>
+                </div>
+                <style jsx global>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
             </div>
         );
     }
@@ -92,106 +113,198 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const navItems = isAdmin ? adminNavItems : workerNavItems;
 
     return (
-        <div className="min-h-screen bg-[#f8fafc]">
+        <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
             {/* Top Header */}
-            <header className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-[#e2e8f0] z-40">
-                <div className="h-full flex items-center justify-between px-4 lg:px-6 max-w-[1600px] mx-auto">
-                    {/* Logo */}
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#6366f1] flex items-center justify-center">
-                            <Brain className="w-4 h-4 text-white" />
-                        </div>
-                        <div className="hidden sm:block">
-                            <h1 className="text-base font-semibold text-[#0f172a]">NeuroNavigator</h1>
-                        </div>
-                        <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#f1f5f9] text-[#64748b]">
+            <header style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '60px',
+                backgroundColor: '#ffffff',
+                borderBottom: '1px solid #e5e7eb',
+                zIndex: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0 20px'
+            }}>
+                {/* Logo */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '10px',
+                        backgroundColor: '#6366f1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <Brain style={{ width: '20px', height: '20px', color: 'white' }} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '16px', fontWeight: '600', color: '#111827' }}>NeuroNavigator</span>
+                        <span style={{
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            color: '#6b7280',
+                            backgroundColor: '#f3f4f6',
+                            padding: '2px 8px',
+                            borderRadius: '4px'
+                        }}>
                             {isAdmin ? 'Admin' : 'Worker'}
                         </span>
                     </div>
+                </div>
 
-                    {/* User info and logout */}
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center">
-                                <span className="text-sm font-medium text-[#64748b]">
-                                    {profile?.full_name?.charAt(0) || 'U'}
-                                </span>
-                            </div>
-                            <div className="hidden sm:block">
-                                <p className="text-sm font-medium text-[#0f172a]">
-                                    {profile?.full_name || 'User'}
-                                </p>
-                            </div>
-                        </div>
-                        <Button variant="ghost" size="sm" onClick={handleLogout}>
-                            <LogOut className="w-4 h-4" />
-                        </Button>
+                {/* User info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        backgroundColor: '#6366f1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    }}>
+                        {profile?.full_name?.charAt(0) || 'U'}
                     </div>
+                    <span style={{ fontSize: '14px', fontWeight: '500', color: '#374151' }}>
+                        {profile?.full_name || 'User'}
+                    </span>
+                    <button
+                        onClick={handleLogout}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '8px 12px',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            color: '#6b7280',
+                            fontSize: '14px'
+                        }}
+                    >
+                        <LogOut style={{ width: '18px', height: '18px' }} />
+                    </button>
                 </div>
             </header>
 
-            {/* Main content area */}
-            <div className="pt-14 pb-20 lg:pb-6 lg:pl-56">
-                {/* Desktop Sidebar */}
-                <aside className="hidden lg:block fixed top-14 left-0 w-56 h-[calc(100vh-3.5rem)] bg-white border-r border-[#e2e8f0]">
-                    <nav className="p-3 space-y-1">
-                        {navItems.map((item) => {
-                            const isActive = pathname === item.href;
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg
-                    transition-colors duration-150 text-sm font-medium
-                    ${isActive
-                                            ? 'bg-[#6366f1] text-white'
-                                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#0f172a]'
-                                        }
-                  `}
-                                >
-                                    <item.icon className="w-4 h-4" />
-                                    {item.label}
-                                    {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
-                                </Link>
-                            );
-                        })}
-                    </nav>
-                </aside>
+            {/* Desktop Sidebar */}
+            <aside style={{
+                position: 'fixed',
+                top: '60px',
+                left: 0,
+                width: '220px',
+                height: 'calc(100vh - 60px)',
+                backgroundColor: '#ffffff',
+                borderRight: '1px solid #e5e7eb',
+                padding: '16px 12px',
+                display: 'none'
+            }} className="desktop-sidebar">
+                {navItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                padding: '12px 14px',
+                                borderRadius: '10px',
+                                marginBottom: '4px',
+                                textDecoration: 'none',
+                                backgroundColor: isActive ? '#6366f1' : 'transparent',
+                                color: isActive ? '#ffffff' : '#6b7280',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                transition: 'all 0.15s'
+                            }}
+                        >
+                            <item.icon style={{ width: '20px', height: '20px' }} />
+                            {item.label}
+                        </Link>
+                    );
+                })}
+            </aside>
 
-                {/* Page content */}
-                <main className="p-4 sm:p-6 min-h-[calc(100vh-3.5rem)]">
-                    <div className="max-w-5xl mx-auto animate-fade-in">
-                        {children}
-                    </div>
-                </main>
-            </div>
+            {/* Main Content */}
+            <main style={{
+                paddingTop: '60px',
+                paddingBottom: '80px',
+                minHeight: '100vh'
+            }} className="main-content">
+                {children}
+            </main>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#e2e8f0] z-40">
-                <div className="h-full flex items-center justify-around px-2">
-                    {navItems.map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`
-                  flex flex-col items-center justify-center gap-1 px-3 py-1 rounded-lg min-w-[56px]
-                  transition-colors duration-150
-                  ${isActive
-                                        ? 'text-[#6366f1]'
-                                        : 'text-[#94a3b8]'
-                                    }
-                `}
-                            >
-                                <item.icon className="w-5 h-5" />
-                                <span className="text-[10px] font-medium">{item.label}</span>
-                            </Link>
-                        );
-                    })}
-                </div>
+            <nav style={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: '70px',
+                backgroundColor: '#ffffff',
+                borderTop: '1px solid #e5e7eb',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-around',
+                padding: '0 8px',
+                zIndex: 40
+            }} className="mobile-nav">
+                {navItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '4px',
+                                padding: '8px 16px',
+                                borderRadius: '12px',
+                                textDecoration: 'none',
+                                color: isActive ? '#6366f1' : '#9ca3af',
+                                minWidth: '60px'
+                            }}
+                        >
+                            <item.icon style={{ width: '24px', height: '24px' }} />
+                            <span style={{ fontSize: '11px', fontWeight: '500' }}>{item.label}</span>
+                        </Link>
+                    );
+                })}
             </nav>
+
+            <style jsx global>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        @media (min-width: 1024px) {
+          .desktop-sidebar {
+            display: block !important;
+          }
+          .main-content {
+            margin-left: 220px !important;
+            padding-bottom: 24px !important;
+          }
+          .mobile-nav {
+            display: none !important;
+          }
+        }
+      `}</style>
         </div>
     );
 }
