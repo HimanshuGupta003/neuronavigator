@@ -1,0 +1,36 @@
+{
+  "name": "NeuroNavigator",
+  "short_name": "NeuroNav",
+  "description": "AI-powered field reporting tool for Job Coaches and support staff",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Record Entry",
+      "short_name": "Record",
+      "description": "Quickly record a voice log",
+      "url": "/worker/record",
+      "icons": [{ "src": "/icons/mic-icon.png", "sizes": "96x96" }]
+    }
+  ]
+}
