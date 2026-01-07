@@ -18,17 +18,19 @@ export default function Card({
     const paddings = {
         none: '',
         sm: 'p-4',
-        md: 'p-6',
-        lg: 'p-8',
+        md: 'p-5 sm:p-6',
+        lg: 'p-6 sm:p-8',
     };
 
     return (
         <div
             className={`
-        bg-card rounded-2xl border-2 border-card-border
-        shadow-sm
+        bg-white rounded-xl
+        border border-[#e2e8f0]
+        shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]
+        transition-all duration-200
         ${paddings[padding]}
-        ${hover ? 'transition-all duration-200 hover:shadow-md hover:border-primary/30' : ''}
+        ${hover ? 'hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] hover:border-[#cbd5e1] cursor-pointer' : ''}
         ${onClick ? 'cursor-pointer' : ''}
         ${className}
       `}
@@ -46,7 +48,7 @@ interface CardHeaderProps {
 
 export function CardHeader({ children, className = '' }: CardHeaderProps) {
     return (
-        <div className={`mb-4 ${className}`}>
+        <div className={`mb-5 ${className}`}>
             {children}
         </div>
     );
@@ -59,7 +61,7 @@ interface CardTitleProps {
 
 export function CardTitle({ children, className = '' }: CardTitleProps) {
     return (
-        <h3 className={`text-xl font-semibold text-foreground ${className}`}>
+        <h3 className={`text-lg font-semibold text-[#0f172a] ${className}`}>
             {children}
         </h3>
     );
@@ -72,7 +74,7 @@ interface CardDescriptionProps {
 
 export function CardDescription({ children, className = '' }: CardDescriptionProps) {
     return (
-        <p className={`text-sm text-muted mt-1 ${className}`}>
+        <p className={`text-sm text-[#64748b] mt-1 ${className}`}>
             {children}
         </p>
     );
@@ -94,7 +96,7 @@ interface CardFooterProps {
 
 export function CardFooter({ children, className = '' }: CardFooterProps) {
     return (
-        <div className={`mt-6 pt-4 border-t border-border ${className}`}>
+        <div className={`mt-5 pt-5 border-t border-[#e2e8f0] ${className}`}>
             {children}
         </div>
     );

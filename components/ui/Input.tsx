@@ -15,7 +15,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 {label && (
                     <label
                         htmlFor={inputId}
-                        className="block text-sm font-medium text-foreground mb-2"
+                        className="block text-sm font-medium text-[#334155] mb-1.5"
                     >
                         {label}
                     </label>
@@ -24,26 +24,24 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     ref={ref}
                     id={inputId}
                     className={`
-            w-full h-12 px-4 
-            bg-card text-foreground
-            border-2 rounded-xl
-            transition-all duration-200
-            placeholder:text-muted
-            focus:outline-none focus:ring-0
-            ${error
-                            ? 'border-status-red focus:border-status-red'
-                            : 'border-border focus:border-primary hover:border-muted'
-                        }
-            disabled:opacity-50 disabled:cursor-not-allowed
+            w-full h-10 px-3
+            bg-white text-[#0f172a]
+            border border-[#e2e8f0] rounded-lg
+            transition-colors duration-150
+            placeholder:text-[#94a3b8]
+            focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:ring-offset-0 focus:border-[#6366f1]
+            hover:border-[#cbd5e1]
+            ${error ? 'border-[#ef4444] focus:ring-[#ef4444] focus:border-[#ef4444]' : ''}
+            disabled:bg-[#f8fafc] disabled:text-[#94a3b8] disabled:cursor-not-allowed
             ${className}
           `}
                     {...props}
                 />
                 {error && (
-                    <p className="mt-2 text-sm text-status-red">{error}</p>
+                    <p className="mt-1.5 text-sm text-[#ef4444]">{error}</p>
                 )}
                 {helperText && !error && (
-                    <p className="mt-2 text-sm text-muted">{helperText}</p>
+                    <p className="mt-1.5 text-sm text-[#64748b]">{helperText}</p>
                 )}
             </div>
         );

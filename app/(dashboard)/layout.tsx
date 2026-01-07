@@ -2,8 +2,9 @@
 
 import { useEffect, useState, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Brain, LogOut, Users, FileText, Home, Mic, ClipboardList, Settings, Bell } from 'lucide-react';
+import { Brain, LogOut, Users, FileText, Home, Mic, ClipboardList, Bell, ChevronRight } from 'lucide-react';
 import { Profile } from '@/lib/types';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Button from '@/components/ui/Button';
@@ -39,7 +40,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 if (profileData) {
                     setProfile(profileData as Profile);
 
-                    // Redirect if accessing wrong dashboard
                     const isAdmin = profileData.role === 'admin';
                     const onAdminRoute = pathname.startsWith('/admin');
                     const onWorkerRoute = pathname.startsWith('/worker');
@@ -67,7 +67,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
+            <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
                 <LoadingSpinner size="lg" text="Loading..." />
             </div>
         );
@@ -75,7 +75,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     const isAdmin = profile?.role === 'admin';
 
-    // Navigation items based on role
     const adminNavItems = [
         { href: '/admin', icon: Home, label: 'Dashboard' },
         { href: '/admin/workers', icon: Users, label: 'Workers' },
@@ -93,98 +92,102 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const navItems = isAdmin ? adminNavItems : workerNavItems;
 
     return (
-        <div className="min-h-screen bg-muted-bg">
+        <div className="min-h-screen bg-[#f8fafc]">
             {/* Top Header */}
-            <header className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-border z-40 px-4 lg:px-6">
-                <div className="h-full flex items-center justify-between max-w-7xl mx-auto">
+            <header className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-[#e2e8f0] z-40">
+                <div className="h-full flex items-center justify-between px-4 lg:px-6 max-w-[1600px] mx-auto">
                     {/* Logo */}
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-md">
-                            <Brain className="w-5 h-5 text-white" />
+                        <div className="w-8 h-8 rounded-lg bg-[#6366f1] flex items-center justify-center">
+                            <Brain className="w-4 h-4 text-white" />
                         </div>
                         <div className="hidden sm:block">
-                            <h1 className="text-lg font-bold text-foreground">NeuroNavigator</h1>
-                            <p className="text-xs text-muted -mt-1">
-                                {isAdmin ? 'Admin Portal' : 'Worker Portal'}
-                            </p>
+                            <h1 className="text-base font-semibold text-[#0f172a]">NeuroNavigator</h1>
                         </div>
+                        <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#f1f5f9] text-[#64748b]">
+                            {isAdmin ? 'Admin' : 'Worker'}
+                        </span>
                     </div>
 
                     {/* User info and logout */}
-                    <div className="flex items-center gap-4">
-                        <div className="text-right hidden sm:block">
-                            <p className="text-sm font-medium text-foreground">
-                                {profile?.full_name || 'User'}
-                            </p>
-                            <p className="text-xs text-muted capitalize">
-                                {profile?.role}
-                            </p>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center">
+                                <span className="text-sm font-medium text-[#64748b]">
+                                    {profile?.full_name?.charAt(0) || 'U'}
+                                </span>
+                            </div>
+                            <div className="hidden sm:block">
+                                <p className="text-sm font-medium text-[#0f172a]">
+                                    {profile?.full_name || 'User'}
+                                </p>
+                            </div>
                         </div>
                         <Button variant="ghost" size="sm" onClick={handleLogout}>
                             <LogOut className="w-4 h-4" />
-                            <span className="hidden sm:inline">Logout</span>
                         </Button>
                     </div>
                 </div>
             </header>
 
-            {/* Main content area with bottom nav on mobile, sidebar on desktop */}
-            <div className="pt-16 pb-20 lg:pb-0 lg:pl-64">
+            {/* Main content area */}
+            <div className="pt-14 pb-20 lg:pb-6 lg:pl-56">
                 {/* Desktop Sidebar */}
-                <aside className="hidden lg:fixed lg:top-16 lg:left-0 lg:w-64 lg:h-[calc(100vh-4rem)] lg:flex lg:flex-col bg-card border-r border-border p-4">
-                    <nav className="flex-1 space-y-1">
+                <aside className="hidden lg:block fixed top-14 left-0 w-56 h-[calc(100vh-3.5rem)] bg-white border-r border-[#e2e8f0]">
+                    <nav className="p-3 space-y-1">
                         {navItems.map((item) => {
                             const isActive = pathname === item.href;
                             return (
-                                <a
+                                <Link
                                     key={item.href}
                                     href={item.href}
                                     className={`
-                    flex items-center gap-3 px-4 py-3 rounded-xl
-                    transition-all duration-200 font-medium
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg
+                    transition-colors duration-150 text-sm font-medium
                     ${isActive
-                                            ? 'bg-primary text-white shadow-md'
-                                            : 'text-muted hover:bg-muted-bg hover:text-foreground'
+                                            ? 'bg-[#6366f1] text-white'
+                                            : 'text-[#64748b] hover:bg-[#f1f5f9] hover:text-[#0f172a]'
                                         }
                   `}
                                 >
-                                    <item.icon className="w-5 h-5" />
+                                    <item.icon className="w-4 h-4" />
                                     {item.label}
-                                </a>
+                                    {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
+                                </Link>
                             );
                         })}
                     </nav>
                 </aside>
 
                 {/* Page content */}
-                <main className="p-4 lg:p-6 min-h-[calc(100vh-4rem)]">
-                    <div className="max-w-7xl mx-auto">
+                <main className="p-4 sm:p-6 min-h-[calc(100vh-3.5rem)]">
+                    <div className="max-w-5xl mx-auto animate-fade-in">
                         {children}
                     </div>
                 </main>
             </div>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-card border-t border-border px-2 z-40">
-                <div className="h-full flex items-center justify-around">
+            <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#e2e8f0] z-40">
+                <div className="h-full flex items-center justify-around px-2">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href;
                         return (
-                            <a
+                            <Link
                                 key={item.href}
                                 href={item.href}
                                 className={`
-                  flex flex-col items-center gap-1 px-4 py-2 rounded-xl
-                  transition-all duration-200 min-w-[60px]
+                  flex flex-col items-center justify-center gap-1 px-3 py-1 rounded-lg min-w-[56px]
+                  transition-colors duration-150
                   ${isActive
-                                        ? 'text-primary'
-                                        : 'text-muted hover:text-foreground'
+                                        ? 'text-[#6366f1]'
+                                        : 'text-[#94a3b8]'
                                     }
                 `}
                             >
-                                <item.icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''} transition-transform`} />
-                                <span className="text-xs font-medium">{item.label}</span>
-                            </a>
+                                <item.icon className="w-5 h-5" />
+                                <span className="text-[10px] font-medium">{item.label}</span>
+                            </Link>
                         );
                     })}
                 </div>
