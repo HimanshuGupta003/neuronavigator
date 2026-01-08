@@ -2,17 +2,11 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { KeyRound, CheckCircle2, AlertCircle, User } from 'lucide-react';
+import { KeyRound, CheckCircle2, AlertCircle, User, Brain } from 'lucide-react';
 
 function SetupCredentialsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const supabase = createClient();
 
     const token = searchParams.get('token');
 
@@ -31,7 +25,6 @@ function SetupCredentialsContent() {
             return;
         }
 
-        // Verify invitation token
         async function verifyToken() {
             try {
                 const response = await fetch(`/api/auth/verify-invitation?token=${token}`);
@@ -58,7 +51,6 @@ function SetupCredentialsContent() {
         setLoading(true);
         setError('');
 
-        // Validate passwords
         if (password !== confirmPassword) {
             setError('Passwords do not match');
             setLoading(false);
@@ -72,7 +64,6 @@ function SetupCredentialsContent() {
         }
 
         try {
-            // Create account via API
             const response = await fetch('/api/auth/setup-credentials', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -91,7 +82,6 @@ function SetupCredentialsContent() {
 
             setStep('success');
 
-            // Auto-redirect to login after 3 seconds
             setTimeout(() => {
                 router.push('/login');
             }, 3000);
@@ -103,142 +93,340 @@ function SetupCredentialsContent() {
         }
     };
 
+    const cardStyle: React.CSSProperties = {
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        padding: '32px',
+        border: '1px solid #e5e7eb',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+    };
+
+    const inputStyle: React.CSSProperties = {
+        width: '100%',
+        height: '48px',
+        padding: '0 16px',
+        fontSize: '16px',
+        color: '#111827',
+        backgroundColor: '#ffffff',
+        border: '2px solid #e5e7eb',
+        borderRadius: '12px',
+        outline: 'none',
+        boxSizing: 'border-box' as const,
+        transition: 'border-color 0.15s ease'
+    };
+
     if (step === 'loading') {
         return (
-            <Card padding="lg" className="shadow-xl">
-                <CardContent className="py-12">
-                    <LoadingSpinner size="lg" text="Verifying invitation..." />
-                </CardContent>
-            </Card>
+            <div style={cardStyle}>
+                <div style={{ padding: '48px 0', textAlign: 'center' }}>
+                    <div style={{
+                        width: '40px',
+                        height: '40px',
+                        border: '3px solid #6366f1',
+                        borderTopColor: 'transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        margin: '0 auto 16px auto'
+                    }} />
+                    <p style={{ color: '#6b7280', fontSize: '15px' }}>Verifying invitation...</p>
+                </div>
+            </div>
         );
     }
 
     if (step === 'error') {
         return (
-            <Card padding="lg" className="shadow-xl">
-                <CardContent className="text-center py-8">
-                    <div className="w-16 h-16 rounded-full bg-status-red-bg flex items-center justify-center mx-auto mb-4">
-                        <AlertCircle className="w-8 h-8 text-status-red" />
+            <div style={cardStyle}>
+                <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '50%',
+                        backgroundColor: '#fef2f2',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 16px auto'
+                    }}>
+                        <AlertCircle style={{ width: '32px', height: '32px', color: '#ef4444' }} />
                     </div>
-                    <h2 className="text-xl font-semibold text-foreground mb-2">
+                    <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0' }}>
                         Invitation Error
                     </h2>
-                    <p className="text-muted mb-6">{error}</p>
-                    <Button variant="secondary" onClick={() => router.push('/login')}>
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 24px 0' }}>{error}</p>
+                    <button
+                        onClick={() => router.push('/login')}
+                        style={{
+                            padding: '12px 24px',
+                            backgroundColor: '#f3f4f6',
+                            color: '#374151',
+                            border: 'none',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            cursor: 'pointer'
+                        }}
+                    >
                         Go to Login
-                    </Button>
-                </CardContent>
-            </Card>
+                    </button>
+                </div>
+            </div>
         );
     }
 
     if (step === 'success') {
         return (
-            <Card padding="lg" className="shadow-xl">
-                <CardContent className="text-center py-8">
-                    <div className="w-16 h-16 rounded-full bg-status-green-bg flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle2 className="w-8 h-8 text-status-green" />
+            <div style={cardStyle}>
+                <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '50%',
+                        backgroundColor: '#f0fdf4',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 16px auto'
+                    }}>
+                        <CheckCircle2 style={{ width: '32px', height: '32px', color: '#22c55e' }} />
                     </div>
-                    <h2 className="text-xl font-semibold text-foreground mb-2">
+                    <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0' }}>
                         Account Created!
                     </h2>
-                    <p className="text-muted mb-2">
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
                         Your account has been set up successfully.
                     </p>
-                    <p className="text-sm text-muted">
+                    <p style={{ fontSize: '13px', color: '#9ca3af', marginTop: '8px' }}>
                         Redirecting to login...
                     </p>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         );
     }
 
     return (
-        <Card padding="lg" className="shadow-xl">
-            <CardHeader>
-                <CardTitle className="text-center text-2xl">Set Up Your Account</CardTitle>
-                <CardDescription className="text-center">
+        <div style={cardStyle}>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#111827', margin: 0 }}>
+                    Set Up Your Account
+                </h2>
+                <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
                     Create your credentials to get started
-                </CardDescription>
-            </CardHeader>
+                </p>
+            </div>
 
-            <CardContent>
-                {/* Invitation email badge */}
-                <div className="mb-6 p-4 bg-muted-bg rounded-xl flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                        <p className="text-xs text-muted">Setting up account for</p>
-                        <p className="font-medium text-foreground">{invitation?.email}</p>
-                    </div>
+            {/* Email badge */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '14px 16px',
+                backgroundColor: '#f8fafc',
+                borderRadius: '12px',
+                marginBottom: '24px',
+                border: '1px solid #e5e7eb'
+            }}>
+                <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    backgroundColor: '#eef2ff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
+                    <User style={{ width: '20px', height: '20px', color: '#6366f1' }} />
                 </div>
+                <div>
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Setting up account for</p>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: '#111827', margin: 0 }}>{invitation?.email}</p>
+                </div>
+            </div>
 
-                <form onSubmit={handleSetup} className="space-y-5">
-                    <Input
-                        label="Full Name"
+            <form onSubmit={handleSetup}>
+                {/* Full Name */}
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                        Full Name
+                    </label>
+                    <input
                         type="text"
                         placeholder="Enter your full name"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         required
-                        autoComplete="name"
+                        style={inputStyle}
+                        onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                        onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                     />
+                </div>
 
-                    <Input
-                        label="Password"
+                {/* Password */}
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                        Password
+                    </label>
+                    <input
                         type="password"
                         placeholder="Create a password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        autoComplete="new-password"
-                        helperText="At least 8 characters"
+                        style={inputStyle}
+                        onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                        onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                     />
+                    <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '6px' }}>At least 8 characters</p>
+                </div>
 
-                    <Input
-                        label="Confirm Password"
+                {/* Confirm Password */}
+                <div style={{ marginBottom: '24px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                        Confirm Password
+                    </label>
+                    <input
                         type="password"
                         placeholder="Confirm your password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
-                        autoComplete="new-password"
+                        style={inputStyle}
+                        onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                        onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
                     />
+                </div>
 
-                    {error && (
-                        <div className="p-4 bg-status-red-bg border border-status-red/20 rounded-xl">
-                            <p className="text-sm text-status-red">{error}</p>
-                        </div>
+                {/* Error */}
+                {error && (
+                    <div style={{
+                        padding: '12px 16px',
+                        backgroundColor: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '12px',
+                        marginBottom: '20px'
+                    }}>
+                        <p style={{ fontSize: '14px', color: '#dc2626', margin: 0 }}>{error}</p>
+                    </div>
+                )}
+
+                {/* Button */}
+                <button
+                    type="submit"
+                    disabled={loading}
+                    style={{
+                        width: '100%',
+                        height: '48px',
+                        backgroundColor: loading ? '#a5b4fc' : '#6366f1',
+                        color: 'white',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        border: 'none',
+                        borderRadius: '12px',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)'
+                    }}
+                >
+                    {loading ? (
+                        <div style={{
+                            width: '20px',
+                            height: '20px',
+                            border: '2px solid white',
+                            borderTopColor: 'transparent',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite'
+                        }} />
+                    ) : (
+                        <>
+                            <KeyRound style={{ width: '20px', height: '20px' }} />
+                            Create Account
+                        </>
                     )}
-
-                    <Button
-                        type="submit"
-                        fullWidth
-                        size="lg"
-                        loading={loading}
-                    >
-                        <KeyRound className="w-5 h-5" />
-                        Create Account
-                    </Button>
-                </form>
-            </CardContent>
-        </Card>
+                </button>
+            </form>
+        </div>
     );
 }
 
 export default function SetupCredentialsPage() {
     return (
-        <Suspense
-            fallback={
-                <Card padding="lg" className="shadow-xl">
-                    <CardContent className="py-12">
-                        <LoadingSpinner size="lg" text="Loading..." />
-                    </CardContent>
-                </Card>
-            }
-        >
-            <SetupCredentialsContent />
-        </Suspense>
+        <div style={{
+            minHeight: '100vh',
+            backgroundColor: '#f3f4f6',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+        }}>
+            {/* Logo */}
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '64px',
+                    height: '64px',
+                    backgroundColor: '#6366f1',
+                    borderRadius: '16px',
+                    marginBottom: '16px',
+                    boxShadow: '0 10px 25px rgba(99, 102, 241, 0.3)'
+                }}>
+                    <Brain style={{ width: '32px', height: '32px', color: 'white' }} />
+                </div>
+                <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>
+                    NeuroNavigator
+                </h1>
+                <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
+                    AI-Powered Field Reporting
+                </p>
+            </div>
+
+            <div style={{ width: '100%', maxWidth: '420px' }}>
+                <Suspense
+                    fallback={
+                        <div style={{
+                            backgroundColor: '#ffffff',
+                            borderRadius: '16px',
+                            padding: '48px 32px',
+                            border: '1px solid #e5e7eb',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{
+                                width: '40px',
+                                height: '40px',
+                                border: '3px solid #6366f1',
+                                borderTopColor: 'transparent',
+                                borderRadius: '50%',
+                                animation: 'spin 1s linear infinite',
+                                margin: '0 auto'
+                            }} />
+                        </div>
+                    }
+                >
+                    <SetupCredentialsContent />
+                </Suspense>
+            </div>
+
+            <p style={{
+                textAlign: 'center',
+                fontSize: '14px',
+                color: '#9ca3af',
+                marginTop: '24px'
+            }}>
+                © {new Date().getFullYear()} NeuroNavigator. All rights reserved.
+            </p>
+
+            <style jsx global>{`
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
+        </div>
     );
 }

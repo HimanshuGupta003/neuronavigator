@@ -11,7 +11,7 @@ export default function InvitationsPage() {
     const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState('');
     const [sending, setSending] = useState(false);
-    const [success, setSuccess] = useState<{ link: string } | null>(null);
+    const [success, setSuccess] = useState<{ link: string; emailSent: boolean } | null>(null);
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
 
@@ -55,7 +55,7 @@ export default function InvitationsPage() {
                 throw new Error(data.error || 'Failed to send invitation');
             }
 
-            setSuccess({ link: data.data.invitationLink });
+            setSuccess({ link: data.data.invitationLink, emailSent: data.data.emailSent });
             setEmail('');
             loadInvitations();
         } catch (err) {
@@ -171,7 +171,9 @@ export default function InvitationsPage() {
                             borderRadius: '10px'
                         }}>
                             <p style={{ fontSize: '14px', fontWeight: '500', color: '#16a34a', margin: '0 0 8px 0' }}>
-                                ✓ Invitation created successfully!
+                                {success.emailSent
+                                    ? '✓ Invitation email sent successfully!'
+                                    : '✓ Invitation created! Share the link below with the worker:'}
                             </p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <code style={{

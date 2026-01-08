@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
     try {
-        const supabase = await createClient();
+        // Use admin client since there's no authenticated user yet
         const adminSupabase = await createAdminClient();
 
         const { token, fullName, password } = await request.json();
@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Find and validate invitation
-        const { data: invitation, error: invError } = await supabase
+        // Find and validate invitation using admin client
+        const { data: invitation, error: invError } = await adminSupabase
             .from('invitations')
             .select('id, email, expires_at, used_at')
             .eq('token', token)
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Mark invitation as used
-        await supabase
+        await adminSupabase
             .from('invitations')
             .update({ used_at: new Date().toISOString() })
             .eq('id', invitation.id);
