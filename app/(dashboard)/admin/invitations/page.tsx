@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import { UserPlus, Copy, Check, Mail, Clock, Trash2, Link2 } from 'lucide-react';
+import { UserPlus, Copy, Check, Mail, Clock, Link2 } from 'lucide-react';
 import { Invitation } from '@/lib/types';
 
 export default function InvitationsPage() {
@@ -76,144 +73,265 @@ export default function InvitationsPage() {
 
     const getInvitationStatus = (inv: Invitation) => {
         if (inv.used_at) {
-            return { label: 'Used', color: 'text-status-green', bg: 'bg-status-green-bg' };
+            return { label: 'Used', color: '#22c55e', bgColor: '#f0fdf4', borderColor: '#bbf7d0' };
         }
         const expires = new Date(inv.expires_at);
         if (expires < new Date()) {
-            return { label: 'Expired', color: 'text-status-red', bg: 'bg-status-red-bg' };
+            return { label: 'Expired', color: '#ef4444', bgColor: '#fef2f2', borderColor: '#fecaca' };
         }
-        return { label: 'Pending', color: 'text-status-yellow', bg: 'bg-status-yellow-bg' };
+        return { label: 'Pending', color: '#f59e0b', bgColor: '#fffbeb', borderColor: '#fde68a' };
+    };
+
+    const cardStyle: React.CSSProperties = {
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        padding: '24px',
+        border: '1px solid #e5e7eb',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
     };
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            {/* Page Header */}
-            <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Invitations</h1>
-                <p className="text-muted mt-1">Invite workers to join the platform</p>
+        <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ marginBottom: '24px' }}>
+                <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>Invitations</h1>
+                <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>Invite workers to join the platform</p>
             </div>
 
             {/* Invite Form */}
-            <Card padding="lg">
-                <CardHeader>
-                    <CardTitle>Invite New Worker</CardTitle>
-                    <CardDescription>
-                        Send an invitation link to a worker&apos;s email address
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleInvite} className="space-y-4">
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="flex-1">
-                                <Input
-                                    type="email"
-                                    placeholder="Enter worker's email address"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <Button type="submit" loading={sending} className="sm:w-auto">
-                                <UserPlus className="w-4 h-4" />
-                                Send Invitation
-                            </Button>
+            <div style={{ ...cardStyle, marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 4px 0' }}>Invite New Worker</h2>
+                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 20px 0' }}>Send an invitation link to a worker's email address</p>
+
+                <form onSubmit={handleInvite}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        <input
+                            type="email"
+                            placeholder="Enter worker's email address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            style={{
+                                flex: '1',
+                                minWidth: '200px',
+                                height: '44px',
+                                padding: '0 14px',
+                                fontSize: '14px',
+                                border: '2px solid #e5e7eb',
+                                borderRadius: '10px',
+                                outline: 'none',
+                                transition: 'border-color 0.15s'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                        />
+                        <button
+                            type="submit"
+                            disabled={sending}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                height: '44px',
+                                padding: '0 20px',
+                                backgroundColor: sending ? '#a5b4fc' : '#6366f1',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '10px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: sending ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            <UserPlus style={{ width: '18px', height: '18px' }} />
+                            {sending ? 'Sending...' : 'Send Invitation'}
+                        </button>
+                    </div>
+
+                    {error && (
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '12px 16px',
+                            backgroundColor: '#fef2f2',
+                            border: '1px solid #fecaca',
+                            borderRadius: '10px',
+                            color: '#dc2626',
+                            fontSize: '14px'
+                        }}>
+                            {error}
                         </div>
+                    )}
 
-                        {error && (
-                            <div className="p-4 bg-status-red-bg border border-status-red/20 rounded-xl">
-                                <p className="text-sm text-status-red">{error}</p>
+                    {success && (
+                        <div style={{
+                            marginTop: '16px',
+                            padding: '16px',
+                            backgroundColor: '#f0fdf4',
+                            border: '1px solid #bbf7d0',
+                            borderRadius: '10px'
+                        }}>
+                            <p style={{ fontSize: '14px', fontWeight: '500', color: '#16a34a', margin: '0 0 8px 0' }}>
+                                ✓ Invitation created successfully!
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <code style={{
+                                    flex: 1,
+                                    padding: '10px 12px',
+                                    backgroundColor: '#ffffff',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    fontSize: '12px',
+                                    color: '#374151',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    {success.link}
+                                </code>
+                                <button
+                                    type="button"
+                                    onClick={() => copyLink(success.link)}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        padding: '10px 16px',
+                                        backgroundColor: '#f3f4f6',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        fontSize: '13px',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        color: '#374151'
+                                    }}
+                                >
+                                    {copied ? <Check style={{ width: '16px', height: '16px' }} /> : <Copy style={{ width: '16px', height: '16px' }} />}
+                                    {copied ? 'Copied!' : 'Copy'}
+                                </button>
                             </div>
-                        )}
-
-                        {success && (
-                            <div className="p-4 bg-status-green-bg border border-status-green/20 rounded-xl">
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-status-green mb-2">
-                                            Invitation created successfully!
-                                        </p>
-                                        <p className="text-sm text-foreground truncate font-mono">
-                                            {success.link}
-                                        </p>
-                                    </div>
-                                    <Button
-                                        type="button"
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={() => copyLink(success.link)}
-                                    >
-                                        {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                        {copied ? 'Copied!' : 'Copy'}
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </form>
-                </CardContent>
-            </Card>
+                        </div>
+                    )}
+                </form>
+            </div>
 
             {/* Invitations List */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>All Invitations</CardTitle>
-                    <CardDescription>History of all sent invitations</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {loading ? (
-                        <div className="py-8 text-center text-muted">Loading...</div>
-                    ) : invitations.length === 0 ? (
-                        <div className="py-8 text-center">
-                            <Mail className="w-12 h-12 text-muted mx-auto mb-3" />
-                            <p className="text-muted">No invitations sent yet</p>
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-border">
-                            {invitations.map((inv) => {
-                                const status = getInvitationStatus(inv);
-                                const appUrl = typeof window !== 'undefined'
-                                    ? window.location.origin
-                                    : 'http://localhost:3000';
-                                const invLink = `${appUrl}/setup-credentials?token=${inv.token}`;
+            <div style={cardStyle}>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 4px 0' }}>All Invitations</h2>
+                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 20px 0' }}>History of all sent invitations</p>
 
-                                return (
-                                    <div key={inv.id} className="py-4 first:pt-0 last:pb-0">
-                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-muted-bg flex items-center justify-center">
-                                                    <Mail className="w-5 h-5 text-muted" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-foreground">{inv.email}</p>
-                                                    <div className="flex items-center gap-2 text-xs text-muted">
-                                                        <Clock className="w-3 h-3" />
-                                                        <span>
-                                                            Expires: {new Date(inv.expires_at).toLocaleDateString()}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 pl-13 sm:pl-0">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.bg} ${status.color}`}>
-                                                    {status.label}
+                {loading ? (
+                    <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                        <div style={{
+                            width: '24px',
+                            height: '24px',
+                            border: '3px solid #6366f1',
+                            borderTopColor: 'transparent',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite',
+                            margin: '0 auto'
+                        }} />
+                    </div>
+                ) : invitations.length === 0 ? (
+                    <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                        <div style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '12px',
+                            backgroundColor: '#f3f4f6',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 12px auto'
+                        }}>
+                            <Mail style={{ width: '28px', height: '28px', color: '#9ca3af' }} />
+                        </div>
+                        <p style={{ fontSize: '15px', fontWeight: '500', color: '#374151', margin: 0 }}>No invitations sent yet</p>
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {invitations.map((inv) => {
+                            const status = getInvitationStatus(inv);
+                            const appUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+                            const invLink = `${appUrl}/setup-credentials?token=${inv.token}`;
+
+                            return (
+                                <div key={inv.id} style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    padding: '14px 16px',
+                                    backgroundColor: '#f9fafb',
+                                    borderRadius: '10px',
+                                    border: '1px solid #e5e7eb',
+                                    gap: '12px',
+                                    flexWrap: 'wrap'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '200px' }}>
+                                        <div style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            backgroundColor: '#f3f4f6',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            <Mail style={{ width: '20px', height: '20px', color: '#6b7280' }} />
+                                        </div>
+                                        <div>
+                                            <p style={{ fontSize: '14px', fontWeight: '500', color: '#111827', margin: 0 }}>{inv.email}</p>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                                                <Clock style={{ width: '12px', height: '12px', color: '#9ca3af' }} />
+                                                <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                                                    Expires: {new Date(inv.expires_at).toLocaleDateString()}
                                                 </span>
-                                                {status.label === 'Pending' && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => copyLink(invLink)}
-                                                    >
-                                                        <Link2 className="w-4 h-4" />
-                                                    </Button>
-                                                )}
                                             </div>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <span style={{
+                                            padding: '4px 12px',
+                                            borderRadius: '20px',
+                                            fontSize: '12px',
+                                            fontWeight: '500',
+                                            backgroundColor: status.bgColor,
+                                            color: status.color,
+                                            border: `1px solid ${status.borderColor}`
+                                        }}>
+                                            {status.label}
+                                        </span>
+                                        {status.label === 'Pending' && (
+                                            <button
+                                                onClick={() => copyLink(invLink)}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    backgroundColor: '#ffffff',
+                                                    border: '1px solid #e5e7eb',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                <Link2 style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            <style jsx global>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
         </div>
     );
 }

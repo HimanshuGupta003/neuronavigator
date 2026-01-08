@@ -28,15 +28,23 @@ export default function LoginPage() {
             if (authError) throw authError;
 
             if (data.user) {
-                const { data: profile } = await supabase
+                console.log('User logged in:', data.user.id);
+
+                const { data: profile, error: profileError } = await supabase
                     .from('profiles')
                     .select('role')
                     .eq('id', data.user.id)
                     .single();
 
+                console.log('Profile data:', profile);
+                console.log('Profile error:', profileError);
+                console.log('Role:', profile?.role);
+
                 if (profile?.role === 'admin') {
+                    console.log('Redirecting to /admin');
                     router.push('/admin');
                 } else {
+                    console.log('Redirecting to /worker');
                     router.push('/worker');
                 }
                 router.refresh();

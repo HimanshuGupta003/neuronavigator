@@ -2,21 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import { Users, FileText, UserPlus, TrendingUp, Clock, AlertTriangle } from 'lucide-react';
-import { Profile } from '@/lib/types';
-
-interface DashboardStats {
-    totalWorkers: number;
-    pendingInvitations: number;
-    totalEntries: number;
-    todayEntries: number;
-}
+import { Users, UserPlus, FileText, TrendingUp, Clock, ArrowRight } from 'lucide-react';
+import { Profile, Invitation, Entry } from '@/lib/types';
+import Link from 'next/link';
 
 export default function AdminDashboardPage() {
     const supabase = createClient();
-    const [stats, setStats] = useState<DashboardStats>({
+    const [stats, setStats] = useState({
         totalWorkers: 0,
         pendingInvitations: 0,
         totalEntries: 0,
@@ -26,210 +18,260 @@ export default function AdminDashboardPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function loadDashboard() {
-            try {
-                // Get total workers
-                const { count: workerCount } = await supabase
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('role', 'worker');
-
-                // Get pending invitations
-                const { count: invitationCount } = await supabase
-                    .from('invitations')
-                    .select('*', { count: 'exact', head: true })
-                    .is('used_at', null)
-                    .gte('expires_at', new Date().toISOString());
-
-                // Get total entries
-                const { count: entriesCount } = await supabase
-                    .from('entries')
-                    .select('*', { count: 'exact', head: true });
-
-                // Get today's entries
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const { count: todayCount } = await supabase
-                    .from('entries')
-                    .select('*', { count: 'exact', head: true })
-                    .gte('created_at', today.toISOString());
-
-                setStats({
-                    totalWorkers: workerCount || 0,
-                    pendingInvitations: invitationCount || 0,
-                    totalEntries: entriesCount || 0,
-                    todayEntries: todayCount || 0,
-                });
-
-                // Get recent workers
-                const { data: workers } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('role', 'worker')
-                    .order('created_at', { ascending: false })
-                    .limit(5);
-
-                if (workers) {
-                    setRecentWorkers(workers as Profile[]);
-                }
-            } catch (error) {
-                console.error('Failed to load dashboard:', error);
-            } finally {
-                setLoading(false);
-            }
-        }
-
         loadDashboard();
-    }, [supabase]);
+    }, []);
+
+    async function loadDashboard() {
+        try {
+            // Get workers count
+            const { count: workersCount } = await supabase
+                .from('profiles')
+                .select('*', { count: 'exact', head: true })
+                .eq('role', 'worker');
+
+            // Get pending invitations count
+            const { count: invitationsCount } = await supabase
+                .from('invitations')
+                .select('*', { count: 'exact', head: true })
+                .is('used_at', null)
+                .gt('expires_at', new Date().toISOString());
+
+            // Get total entries count
+            const { count: entriesCount } = await supabase
+                .from('entries')
+                .select('*', { count: 'exact', head: true });
+
+            // Get today's entries count
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const { count: todayCount } = await supabase
+                .from('entries')
+                .select('*', { count: 'exact', head: true })
+                .gte('created_at', today.toISOString());
+
+            // Get recent workers
+            const { data: workers } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('role', 'worker')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            setStats({
+                totalWorkers: workersCount || 0,
+                pendingInvitations: invitationsCount || 0,
+                totalEntries: entriesCount || 0,
+                todayEntries: todayCount || 0,
+            });
+
+            if (workers) {
+                setRecentWorkers(workers as Profile[]);
+            }
+        } catch (error) {
+            console.error('Failed to load dashboard:', error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const cardStyle: React.CSSProperties = {
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        padding: '20px',
+        border: '1px solid #e5e7eb',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+    };
 
     const statCards = [
-        {
-            title: 'Total Workers',
-            value: stats.totalWorkers,
-            icon: Users,
-            color: 'text-primary',
-            bgColor: 'bg-primary/10',
-        },
-        {
-            title: 'Pending Invitations',
-            value: stats.pendingInvitations,
-            icon: UserPlus,
-            color: 'text-status-yellow',
-            bgColor: 'bg-status-yellow-bg',
-        },
-        {
-            title: 'Total Entries',
-            value: stats.totalEntries,
-            icon: FileText,
-            color: 'text-status-green',
-            bgColor: 'bg-status-green-bg',
-        },
-        {
-            title: "Today's Entries",
-            value: stats.todayEntries,
-            icon: TrendingUp,
-            color: 'text-primary',
-            bgColor: 'bg-primary/10',
-        },
+        { label: 'Total Workers', value: stats.totalWorkers, icon: Users, color: '#6366f1', bgColor: '#eef2ff' },
+        { label: 'Pending Invitations', value: stats.pendingInvitations, icon: UserPlus, color: '#f59e0b', bgColor: '#fffbeb' },
+        { label: 'Total Entries', value: stats.totalEntries, icon: FileText, color: '#22c55e', bgColor: '#f0fdf4' },
+        { label: 'Today\'s Entries', value: stats.todayEntries, icon: TrendingUp, color: '#3b82f6', bgColor: '#eff6ff' },
+    ];
+
+    const quickActions = [
+        { label: 'Manage Workers', description: 'View and manage all workers', icon: Users, href: '/admin/workers', color: '#6366f1' },
+        { label: 'View Reports', description: 'Browse generated reports', icon: FileText, href: '/admin/reports', color: '#22c55e' },
+        { label: 'Invitations', description: 'Manage pending invitations', icon: UserPlus, href: '/admin/invitations', color: '#f59e0b' },
     ];
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            {/* Page Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div style={{ padding: '24px', maxWidth: '1100px', margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Admin Dashboard</h1>
-                    <p className="text-muted mt-1">Manage workers and monitor activity</p>
+                    <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>Admin Dashboard</h1>
+                    <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>Manage workers and monitor activity</p>
                 </div>
-                <Button onClick={() => window.location.href = '/admin/invitations'}>
-                    <UserPlus className="w-4 h-4" />
-                    Invite Worker
-                </Button>
+                <Link href="/admin/invitations" style={{ textDecoration: 'none' }}>
+                    <button style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 20px',
+                        backgroundColor: '#6366f1',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)'
+                    }}>
+                        <UserPlus style={{ width: '18px', height: '18px' }} />
+                        Invite Worker
+                    </button>
+                </Link>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
                 {statCards.map((stat) => (
-                    <Card key={stat.title} padding="md" hover>
-                        <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
-                                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                    <div key={stat.label} style={cardStyle}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{
+                                width: '48px',
+                                height: '48px',
+                                borderRadius: '12px',
+                                backgroundColor: stat.bgColor,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <stat.icon style={{ width: '24px', height: '24px', color: stat.color }} />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-foreground">
+                                <p style={{ fontSize: '28px', fontWeight: '700', color: '#111827', margin: 0 }}>
                                     {loading ? '-' : stat.value}
                                 </p>
-                                <p className="text-sm text-muted">{stat.title}</p>
+                                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>{stat.label}</p>
                             </div>
                         </div>
-                    </Card>
+                    </div>
                 ))}
             </div>
 
             {/* Recent Workers */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Recent Workers</CardTitle>
-                    <CardDescription>Latest workers added to the system</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {loading ? (
-                        <div className="py-8 text-center text-muted">Loading...</div>
-                    ) : recentWorkers.length === 0 ? (
-                        <div className="py-8 text-center">
-                            <Users className="w-12 h-12 text-muted mx-auto mb-3" />
-                            <p className="text-muted">No workers yet</p>
-                            <p className="text-sm text-muted/70 mt-1">
-                                Invite workers to get started
-                            </p>
+            <div style={{ ...cardStyle, marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div>
+                        <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: 0 }}>Recent Workers</h2>
+                        <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px' }}>Latest workers added to the system</p>
+                    </div>
+                    {recentWorkers.length > 0 && (
+                        <Link href="/admin/workers" style={{ fontSize: '14px', color: '#6366f1', textDecoration: 'none', fontWeight: '500' }}>
+                            View All →
+                        </Link>
+                    )}
+                </div>
+
+                {loading ? (
+                    <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                        <div style={{
+                            width: '24px',
+                            height: '24px',
+                            border: '3px solid #6366f1',
+                            borderTopColor: 'transparent',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite',
+                            margin: '0 auto'
+                        }} />
+                    </div>
+                ) : recentWorkers.length === 0 ? (
+                    <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                        <div style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '12px',
+                            backgroundColor: '#f3f4f6',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 12px auto'
+                        }}>
+                            <Users style={{ width: '28px', height: '28px', color: '#9ca3af' }} />
                         </div>
-                    ) : (
-                        <div className="divide-y divide-border">
-                            {recentWorkers.map((worker) => (
-                                <div key={worker.id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                            <span className="text-sm font-bold text-primary">
-                                                {worker.full_name?.charAt(0) || worker.email.charAt(0).toUpperCase()}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-foreground">
-                                                {worker.full_name || 'Unnamed Worker'}
-                                            </p>
-                                            <p className="text-sm text-muted">{worker.email}</p>
-                                        </div>
+                        <p style={{ fontSize: '15px', fontWeight: '500', color: '#374151', margin: 0 }}>No workers yet</p>
+                        <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>Invite workers to get started</p>
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {recentWorkers.map((worker) => (
+                            <div key={worker.id} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '12px 16px',
+                                backgroundColor: '#f9fafb',
+                                borderRadius: '10px',
+                                border: '1px solid #e5e7eb'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#6366f1',
+                                        color: 'white',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontWeight: '600',
+                                        fontSize: '14px'
+                                    }}>
+                                        {worker.full_name?.charAt(0) || worker.email.charAt(0).toUpperCase()}
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-xs text-muted">
-                                            Joined {new Date(worker.created_at).toLocaleDateString()}
+                                    <div>
+                                        <p style={{ fontSize: '14px', fontWeight: '500', color: '#111827', margin: 0 }}>
+                                            {worker.full_name || 'Unnamed'}
                                         </p>
+                                        <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>{worker.email}</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#6b7280' }}>
+                                    <Clock style={{ width: '14px', height: '14px' }} />
+                                    {new Date(worker.created_at).toLocaleDateString()}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card hover className="cursor-pointer" onClick={() => window.location.href = '/admin/workers'}>
-                    <CardContent className="flex items-center gap-4 py-4">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                            <Users className="w-6 h-6 text-primary" />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                {quickActions.map((action) => (
+                    <Link key={action.href} href={action.href} style={{ textDecoration: 'none' }}>
+                        <div style={{ ...cardStyle, cursor: 'pointer', transition: 'box-shadow 0.2s, border-color 0.2s' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                <div style={{
+                                    width: '44px',
+                                    height: '44px',
+                                    borderRadius: '10px',
+                                    backgroundColor: `${action.color}15`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <action.icon style={{ width: '22px', height: '22px', color: action.color }} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <p style={{ fontSize: '15px', fontWeight: '600', color: '#111827', margin: 0 }}>{action.label}</p>
+                                    <p style={{ fontSize: '13px', color: '#6b7280', margin: '2px 0 0 0' }}>{action.description}</p>
+                                </div>
+                                <ArrowRight style={{ width: '18px', height: '18px', color: '#9ca3af' }} />
+                            </div>
                         </div>
-                        <div>
-                            <p className="font-medium text-foreground">Manage Workers</p>
-                            <p className="text-sm text-muted">View and manage all workers</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card hover className="cursor-pointer" onClick={() => window.location.href = '/admin/reports'}>
-                    <CardContent className="flex items-center gap-4 py-4">
-                        <div className="w-12 h-12 rounded-xl bg-status-green-bg flex items-center justify-center">
-                            <FileText className="w-6 h-6 text-status-green" />
-                        </div>
-                        <div>
-                            <p className="font-medium text-foreground">View Reports</p>
-                            <p className="text-sm text-muted">Browse all generated reports</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card hover className="cursor-pointer" onClick={() => window.location.href = '/admin/invitations'}>
-                    <CardContent className="flex items-center gap-4 py-4">
-                        <div className="w-12 h-12 rounded-xl bg-status-yellow-bg flex items-center justify-center">
-                            <UserPlus className="w-6 h-6 text-status-yellow" />
-                        </div>
-                        <div>
-                            <p className="font-medium text-foreground">Invitations</p>
-                            <p className="text-sm text-muted">Manage pending invitations</p>
-                        </div>
-                    </CardContent>
-                </Card>
+                    </Link>
+                ))}
             </div>
+
+            <style jsx global>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
         </div>
     );
 }

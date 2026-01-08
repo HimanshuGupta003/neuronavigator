@@ -1,27 +1,44 @@
 'use client';
 
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { FileText, Construction } from 'lucide-react';
 
 export default function AdminReportsPage() {
+    const cardStyle: React.CSSProperties = {
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        padding: '24px',
+        border: '1px solid #e5e7eb',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+    };
+
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Reports</h1>
-                <p className="text-muted mt-1">View all generated reports</p>
+        <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ marginBottom: '24px' }}>
+                <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>Reports</h1>
+                <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>View all generated reports</p>
             </div>
 
-            <Card>
-                <CardContent className="py-12 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-muted-bg flex items-center justify-center mx-auto mb-4">
-                        <Construction className="w-8 h-8 text-muted" />
+            <div style={cardStyle}>
+                <div style={{ padding: '48px 0', textAlign: 'center' }}>
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '16px',
+                        backgroundColor: '#f3f4f6',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 16px auto'
+                    }}>
+                        <Construction style={{ width: '32px', height: '32px', color: '#9ca3af' }} />
                     </div>
-                    <h2 className="text-lg font-semibold text-foreground mb-2">Coming Soon</h2>
-                    <p className="text-muted max-w-md mx-auto">
+                    <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0' }}>Coming Soon</h2>
+                    <p style={{ fontSize: '14px', color: '#6b7280', maxWidth: '300px', margin: '0 auto' }}>
                         The reports section will be available once voice recording and AI processing features are implemented.
                     </p>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 }
