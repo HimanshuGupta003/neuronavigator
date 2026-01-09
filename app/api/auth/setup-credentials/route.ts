@@ -51,39 +51,83 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create user account using admin client
-        const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
-            email: invitation.email,
-            password: password,
-            email_confirm: true, // Auto-confirm email since they came via invite
-        });
+        // Check if user was already created by Supabase invite
+        const { data: existingUsers } = await adminSupabase.auth.admin.listUsers();
+        const existingUser = existingUsers?.users?.find(u => u.email === invitation.email);
 
-        if (authError || !authData.user) {
-            console.error('Failed to create auth user:', authError);
-            return NextResponse.json(
-                { success: false, error: authError?.message || 'Failed to create user account' },
-                { status: 500 }
+        let userId: string;
+
+        if (existingUser) {
+            // User exists (created by inviteUserByEmail) - update their password
+            console.log('User already exists, updating password...');
+            const { error: updateError } = await adminSupabase.auth.admin.updateUserById(
+                existingUser.id,
+                {
+                    password: password,
+                    email_confirm: true,
+                }
             );
-        }
 
-        // Create profile
-        const { error: profileError } = await adminSupabase
-            .from('profiles')
-            .insert({
-                id: authData.user.id,
+            if (updateError) {
+                console.error('Failed to update user password:', updateError);
+                return NextResponse.json(
+                    { success: false, error: 'Failed to set password' },
+                    { status: 500 }
+                );
+            }
+
+            userId = existingUser.id;
+        } else {
+            // Create new user if not exists
+            console.log('Creating new user...');
+            const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
                 email: invitation.email,
-                full_name: fullName,
-                role: 'worker',
+                password: password,
+                email_confirm: true,
             });
 
-        if (profileError) {
-            console.error('Failed to create profile:', profileError);
-            // Clean up auth user if profile creation fails
-            await adminSupabase.auth.admin.deleteUser(authData.user.id);
-            return NextResponse.json(
-                { success: false, error: 'Failed to create user profile' },
-                { status: 500 }
-            );
+            if (authError || !authData.user) {
+                console.error('Failed to create auth user:', authError);
+                return NextResponse.json(
+                    { success: false, error: authError?.message || 'Failed to create user account' },
+                    { status: 500 }
+                );
+            }
+
+            userId = authData.user.id;
+        }
+
+        // Check if profile already exists
+        const { data: existingProfile } = await adminSupabase
+            .from('profiles')
+            .select('id')
+            .eq('id', userId)
+            .single();
+
+        if (!existingProfile) {
+            // Create profile if it doesn't exist
+            const { error: profileError } = await adminSupabase
+                .from('profiles')
+                .insert({
+                    id: userId,
+                    email: invitation.email,
+                    full_name: fullName,
+                    role: 'worker',
+                });
+
+            if (profileError) {
+                console.error('Failed to create profile:', profileError);
+                return NextResponse.json(
+                    { success: false, error: 'Failed to create user profile' },
+                    { status: 500 }
+                );
+            }
+        } else {
+            // Update existing profile with full name
+            await adminSupabase
+                .from('profiles')
+                .update({ full_name: fullName })
+                .eq('id', userId);
         }
 
         // Mark invitation as used
@@ -95,7 +139,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             data: {
-                userId: authData.user.id,
+                userId: userId,
                 email: invitation.email,
             },
         });
