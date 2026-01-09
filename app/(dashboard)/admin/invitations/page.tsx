@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { UserPlus, Copy, Check, Mail, Clock, Link2 } from 'lucide-react';
+import { UserPlus, Copy, Check, Mail, Clock, Link2, Sparkles } from 'lucide-react';
 import { Invitation } from '@/lib/types';
+import styles from './invitations.module.css';
 
 export default function InvitationsPage() {
     const supabase = createClient();
@@ -73,141 +74,67 @@ export default function InvitationsPage() {
 
     const getInvitationStatus = (inv: Invitation) => {
         if (inv.used_at) {
-            return { label: 'Used', color: '#22c55e', bgColor: '#f0fdf4', borderColor: '#bbf7d0' };
+            return { label: 'Used', color: '#4ade80', bgColor: 'rgba(34, 197, 94, 0.15)', borderColor: 'rgba(34, 197, 94, 0.3)' };
         }
         const expires = new Date(inv.expires_at);
         if (expires < new Date()) {
-            return { label: 'Expired', color: '#ef4444', bgColor: '#fef2f2', borderColor: '#fecaca' };
+            return { label: 'Expired', color: '#f87171', bgColor: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.3)' };
         }
-        return { label: 'Pending', color: '#f59e0b', bgColor: '#fffbeb', borderColor: '#fde68a' };
-    };
-
-    const cardStyle: React.CSSProperties = {
-        backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        padding: '24px',
-        border: '1px solid #e5e7eb',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+        return { label: 'Pending', color: '#fbbf24', bgColor: 'rgba(251, 191, 36, 0.15)', borderColor: 'rgba(251, 191, 36, 0.3)' };
     };
 
     return (
-        <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto' }}>
+        <div className={styles.container}>
             {/* Header */}
-            <div style={{ marginBottom: '24px' }}>
-                <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>Invitations</h1>
-                <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>Invite workers to join the platform</p>
+            <div className={styles.header}>
+                <h1 className={styles.title}>Invitations</h1>
+                <p className={styles.subtitle}>Invite workers to join the platform</p>
             </div>
 
             {/* Invite Form */}
-            <div style={{ ...cardStyle, marginBottom: '24px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 4px 0' }}>Invite New Worker</h2>
-                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 20px 0' }}>Send an invitation link to a worker's email address</p>
+            <div className={styles.card}>
+                <h2 className={styles.cardTitle}>Invite New Worker</h2>
+                <p className={styles.cardSubtitle}>Send an invitation link to a worker's email address</p>
 
-                <form onSubmit={handleInvite}>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <form onSubmit={handleInvite} className={styles.inviteForm}>
+                    <div className={styles.formRow}>
                         <input
                             type="email"
                             placeholder="Enter worker's email address"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            style={{
-                                flex: '1',
-                                minWidth: '200px',
-                                height: '44px',
-                                padding: '0 14px',
-                                fontSize: '14px',
-                                border: '2px solid #e5e7eb',
-                                borderRadius: '10px',
-                                outline: 'none',
-                                transition: 'border-color 0.15s'
-                            }}
-                            onFocus={(e) => e.target.style.borderColor = '#6366f1'}
-                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                            className={styles.emailInput}
                         />
-                        <button
-                            type="submit"
-                            disabled={sending}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                height: '44px',
-                                padding: '0 20px',
-                                backgroundColor: sending ? '#a5b4fc' : '#6366f1',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '10px',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                cursor: sending ? 'not-allowed' : 'pointer'
-                            }}
-                        >
-                            <UserPlus style={{ width: '18px', height: '18px' }} />
+                        <button type="submit" disabled={sending} className={styles.sendButton}>
+                            <Sparkles size={18} />
                             {sending ? 'Sending...' : 'Send Invitation'}
                         </button>
                     </div>
 
                     {error && (
-                        <div style={{
-                            marginTop: '16px',
-                            padding: '12px 16px',
-                            backgroundColor: '#fef2f2',
-                            border: '1px solid #fecaca',
-                            borderRadius: '10px',
-                            color: '#dc2626',
-                            fontSize: '14px'
-                        }}>
+                        <div className={styles.errorBox}>
                             {error}
                         </div>
                     )}
 
                     {success && (
-                        <div style={{
-                            marginTop: '16px',
-                            padding: '16px',
-                            backgroundColor: '#f0fdf4',
-                            border: '1px solid #bbf7d0',
-                            borderRadius: '10px'
-                        }}>
-                            <p style={{ fontSize: '14px', fontWeight: '500', color: '#16a34a', margin: '0 0 8px 0' }}>
+                        <div className={styles.successBox}>
+                            <p className={styles.successText}>
                                 {success.emailSent
                                     ? '✓ Invitation email sent successfully!'
                                     : '✓ Invitation created! Share the link below with the worker:'}
                             </p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <code style={{
-                                    flex: 1,
-                                    padding: '10px 12px',
-                                    backgroundColor: '#ffffff',
-                                    border: '1px solid #e5e7eb',
-                                    borderRadius: '8px',
-                                    fontSize: '12px',
-                                    color: '#374151',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap'
-                                }}>
+                            <div className={styles.linkRow}>
+                                <code className={styles.linkCode}>
                                     {success.link}
                                 </code>
                                 <button
                                     type="button"
                                     onClick={() => copyLink(success.link)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        padding: '10px 16px',
-                                        backgroundColor: '#f3f4f6',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        fontSize: '13px',
-                                        fontWeight: '500',
-                                        cursor: 'pointer',
-                                        color: '#374151'
-                                    }}
+                                    className={styles.copyButton}
                                 >
-                                    {copied ? <Check style={{ width: '16px', height: '16px' }} /> : <Copy style={{ width: '16px', height: '16px' }} />}
+                                    {copied ? <Check size={16} /> : <Copy size={16} />}
                                     {copied ? 'Copied!' : 'Copy'}
                                 </button>
                             </div>
@@ -217,107 +144,59 @@ export default function InvitationsPage() {
             </div>
 
             {/* Invitations List */}
-            <div style={cardStyle}>
-                <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 4px 0' }}>All Invitations</h2>
-                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 20px 0' }}>History of all sent invitations</p>
+            <div className={styles.card}>
+                <h2 className={styles.cardTitle}>All Invitations</h2>
+                <p className={styles.cardSubtitle}>History of all sent invitations</p>
 
                 {loading ? (
-                    <div style={{ padding: '40px 0', textAlign: 'center' }}>
-                        <div style={{
-                            width: '24px',
-                            height: '24px',
-                            border: '3px solid #6366f1',
-                            borderTopColor: 'transparent',
-                            borderRadius: '50%',
-                            animation: 'spin 1s linear infinite',
-                            margin: '0 auto'
-                        }} />
+                    <div className={styles.loadingState}>
+                        <div className={styles.spinner}></div>
                     </div>
                 ) : invitations.length === 0 ? (
-                    <div style={{ padding: '40px 0', textAlign: 'center' }}>
-                        <div style={{
-                            width: '56px',
-                            height: '56px',
-                            borderRadius: '12px',
-                            backgroundColor: '#f3f4f6',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 12px auto'
-                        }}>
-                            <Mail style={{ width: '28px', height: '28px', color: '#9ca3af' }} />
+                    <div className={styles.emptyState}>
+                        <div className={styles.emptyIcon}>
+                            <Mail size={32} />
                         </div>
-                        <p style={{ fontSize: '15px', fontWeight: '500', color: '#374151', margin: 0 }}>No invitations sent yet</p>
+                        <p className={styles.emptyTitle}>No invitations sent yet</p>
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div className={styles.invitationList}>
                         {invitations.map((inv) => {
                             const status = getInvitationStatus(inv);
                             const appUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
                             const invLink = `${appUrl}/setup-credentials?token=${inv.token}`;
 
                             return (
-                                <div key={inv.id} style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    padding: '14px 16px',
-                                    backgroundColor: '#f9fafb',
-                                    borderRadius: '10px',
-                                    border: '1px solid #e5e7eb',
-                                    gap: '12px',
-                                    flexWrap: 'wrap'
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '200px' }}>
-                                        <div style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '50%',
-                                            backgroundColor: '#f3f4f6',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}>
-                                            <Mail style={{ width: '20px', height: '20px', color: '#6b7280' }} />
+                                <div key={inv.id} className={styles.invitationItem}>
+                                    <div className={styles.invitationInfo}>
+                                        <div className={styles.invitationIcon}>
+                                            <Mail size={20} />
                                         </div>
                                         <div>
-                                            <p style={{ fontSize: '14px', fontWeight: '500', color: '#111827', margin: 0 }}>{inv.email}</p>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                                                <Clock style={{ width: '12px', height: '12px', color: '#9ca3af' }} />
-                                                <span style={{ fontSize: '12px', color: '#6b7280' }}>
-                                                    Expires: {new Date(inv.expires_at).toLocaleDateString()}
-                                                </span>
+                                            <p className={styles.invitationEmail}>{inv.email}</p>
+                                            <div className={styles.invitationMeta}>
+                                                <Clock size={12} />
+                                                <span>Expires: {new Date(inv.expires_at).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <span style={{
-                                            padding: '4px 12px',
-                                            borderRadius: '20px',
-                                            fontSize: '12px',
-                                            fontWeight: '500',
-                                            backgroundColor: status.bgColor,
-                                            color: status.color,
-                                            border: `1px solid ${status.borderColor}`
-                                        }}>
+                                    <div className={styles.invitationActions}>
+                                        <span
+                                            className={styles.statusBadge}
+                                            style={{
+                                                backgroundColor: status.bgColor,
+                                                color: status.color,
+                                                borderColor: status.borderColor
+                                            }}
+                                        >
                                             {status.label}
                                         </span>
                                         {status.label === 'Pending' && (
                                             <button
                                                 onClick={() => copyLink(invLink)}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    width: '36px',
-                                                    height: '36px',
-                                                    backgroundColor: '#ffffff',
-                                                    border: '1px solid #e5e7eb',
-                                                    borderRadius: '8px',
-                                                    cursor: 'pointer'
-                                                }}
+                                                className={styles.linkButton}
                                             >
-                                                <Link2 style={{ width: '16px', height: '16px', color: '#6b7280' }} />
+                                                <Link2 size={16} />
                                             </button>
                                         )}
                                     </div>
@@ -327,13 +206,6 @@ export default function InvitationsPage() {
                     </div>
                 )}
             </div>
-
-            <style jsx global>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
         </div>
     );
 }

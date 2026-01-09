@@ -25,12 +25,13 @@ export default function Card({
     return (
         <div
             className={`
-        bg-white rounded-xl
-        border border-[#e2e8f0]
-        shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]
-        transition-all duration-200
+        bg-[rgba(255,255,255,0.03)] rounded-2xl
+        border border-[rgba(255,255,255,0.08)]
+        backdrop-blur-xl
+        shadow-[0_4px_20px_rgba(0,0,0,0.3)]
+        transition-all duration-300
         ${paddings[padding]}
-        ${hover ? 'hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] hover:border-[#cbd5e1] cursor-pointer' : ''}
+        ${hover ? 'hover:bg-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.12)] hover:-translate-y-1 cursor-pointer' : ''}
         ${onClick ? 'cursor-pointer' : ''}
         ${className}
       `}
@@ -61,7 +62,7 @@ interface CardTitleProps {
 
 export function CardTitle({ children, className = '' }: CardTitleProps) {
     return (
-        <h3 className={`text-lg font-semibold text-[#0f172a] ${className}`}>
+        <h3 className={`text-lg font-semibold text-[#ffffff] ${className}`}>
             {children}
         </h3>
     );
@@ -74,7 +75,7 @@ interface CardDescriptionProps {
 
 export function CardDescription({ children, className = '' }: CardDescriptionProps) {
     return (
-        <p className={`text-sm text-[#64748b] mt-1 ${className}`}>
+        <p className={`text-sm text-[#737373] mt-1 ${className}`}>
             {children}
         </p>
     );
@@ -96,7 +97,7 @@ interface CardFooterProps {
 
 export function CardFooter({ children, className = '' }: CardFooterProps) {
     return (
-        <div className={`mt-5 pt-5 border-t border-[#e2e8f0] ${className}`}>
+        <div className={`mt-5 pt-5 border-t border-[rgba(255,255,255,0.08)] ${className}`}>
             {children}
         </div>
     );

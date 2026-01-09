@@ -26,44 +26,45 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       inline-flex items-center justify-center gap-2
       font-medium rounded-lg
       transition-all duration-150
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]
       disabled:opacity-50 disabled:cursor-not-allowed
       active:scale-[0.98]
     `;
 
         const variants = {
             primary: `
-        bg-[#6366f1] text-white
-        hover:bg-[#4f46e5]
+        bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white
+        hover:from-[#818cf8] hover:to-[#a78bfa]
         focus-visible:ring-[#6366f1]
-        shadow-sm
+        shadow-[0_4px_12px_rgba(99,102,241,0.4)]
       `,
             secondary: `
-        bg-[#f1f5f9] text-[#334155]
-        hover:bg-[#e2e8f0]
-        focus-visible:ring-[#64748b]
+        bg-[#171717] text-[#e5e5e5]
+        hover:bg-[#1f1f1f]
+        focus-visible:ring-[#525252]
+        border border-[rgba(255,255,255,0.08)]
       `,
             danger: `
-        bg-[#ef4444] text-white
-        hover:bg-[#dc2626]
+        bg-gradient-to-r from-[#ef4444] to-[#dc2626] text-white
+        hover:from-[#f87171] hover:to-[#ef4444]
         focus-visible:ring-[#ef4444]
-        shadow-sm
+        shadow-[0_4px_12px_rgba(239,68,68,0.4)]
       `,
             success: `
-        bg-[#22c55e] text-white
-        hover:bg-[#16a34a]
+        bg-gradient-to-r from-[#22c55e] to-[#16a34a] text-white
+        hover:from-[#4ade80] hover:to-[#22c55e]
         focus-visible:ring-[#22c55e]
-        shadow-sm
+        shadow-[0_4px_12px_rgba(34,197,94,0.4)]
       `,
             ghost: `
-        bg-transparent text-[#64748b]
-        hover:bg-[#f1f5f9] hover:text-[#334155]
-        focus-visible:ring-[#64748b]
+        bg-transparent text-[#a3a3a3]
+        hover:bg-[rgba(255,255,255,0.05)] hover:text-[#e5e5e5]
+        focus-visible:ring-[#525252]
       `,
             outline: `
-        bg-white text-[#334155]
-        border border-[#e2e8f0]
-        hover:bg-[#f8fafc] hover:border-[#cbd5e1]
+        bg-transparent text-[#e5e5e5]
+        border border-[rgba(255,255,255,0.1)]
+        hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.2)]
         focus-visible:ring-[#6366f1]
       `,
         };

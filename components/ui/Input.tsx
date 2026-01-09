@@ -15,7 +15,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 {label && (
                     <label
                         htmlFor={inputId}
-                        className="block text-sm font-medium text-[#334155] mb-1.5"
+                        className="block text-sm font-medium text-[#e5e5e5] mb-1.5"
                     >
                         {label}
                     </label>
@@ -24,24 +24,25 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     ref={ref}
                     id={inputId}
                     className={`
-            w-full h-10 px-3
-            bg-white text-[#0f172a]
-            border border-[#e2e8f0] rounded-lg
-            transition-colors duration-150
-            placeholder:text-[#94a3b8]
+            w-full h-11 px-4
+            bg-[rgba(0,0,0,0.5)] text-[#ffffff]
+            border border-[rgba(255,255,255,0.1)] rounded-lg
+            transition-all duration-200
+            placeholder:text-[#525252]
             focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:ring-offset-0 focus:border-[#6366f1]
-            hover:border-[#cbd5e1]
+            focus:bg-[rgba(0,0,0,0.7)]
+            hover:border-[rgba(255,255,255,0.18)]
             ${error ? 'border-[#ef4444] focus:ring-[#ef4444] focus:border-[#ef4444]' : ''}
-            disabled:bg-[#f8fafc] disabled:text-[#94a3b8] disabled:cursor-not-allowed
+            disabled:bg-[#0a0a0a] disabled:text-[#525252] disabled:cursor-not-allowed
             ${className}
           `}
                     {...props}
                 />
                 {error && (
-                    <p className="mt-1.5 text-sm text-[#ef4444]">{error}</p>
+                    <p className="mt-1.5 text-sm text-[#f87171]">{error}</p>
                 )}
                 {helperText && !error && (
-                    <p className="mt-1.5 text-sm text-[#64748b]">{helperText}</p>
+                    <p className="mt-1.5 text-sm text-[#737373]">{helperText}</p>
                 )}
             </div>
         );

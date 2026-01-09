@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Mic, Clock, FileText, Play, Square, MapPin, AlertCircle } from 'lucide-react';
+import { Mic, Clock, FileText, Play, Square, MapPin, AlertCircle, ArrowRight } from 'lucide-react';
 import { Profile, Shift, Entry } from '@/lib/types';
 import Link from 'next/link';
+import styles from './worker.module.css';
 
 export default function WorkerDashboardPage() {
     const supabase = createClient();
@@ -173,69 +174,42 @@ export default function WorkerDashboardPage() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'green': return '#22c55e';
-            case 'yellow': return '#eab308';
-            case 'red': return '#ef4444';
-            default: return '#94a3b8';
+            case 'green': return '#4ade80';
+            case 'yellow': return '#fbbf24';
+            case 'red': return '#f87171';
+            default: return '#525252';
         }
     };
 
-    const cardStyle: React.CSSProperties = {
-        backgroundColor: '#ffffff',
-        borderRadius: '16px',
-        padding: '24px',
-        border: '1px solid #e5e7eb',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-    };
-
     return (
-        <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto' }}>
+        <div className={styles.container}>
             {/* Page Header */}
-            <div style={{ marginBottom: '24px' }}>
-                <h1 style={{ fontSize: '24px', fontWeight: '600', color: '#111827', margin: 0 }}>
+            <div className={styles.header}>
+                <h1 className={styles.title}>
                     Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}!
                 </h1>
-                <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
+                <p className={styles.subtitle}>
                     {activeShift ? "You're currently clocked in" : 'Clock in to start your shift'}
                 </p>
             </div>
 
             {/* Shift Timer Card */}
-            <div style={{
-                ...cardStyle,
-                marginBottom: '24px',
-                borderColor: activeShift ? '#22c55e' : '#e5e7eb',
-                backgroundColor: activeShift ? '#f0fdf4' : '#ffffff'
-            }}>
-                <div style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '20px'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{
-                            width: '56px',
-                            height: '56px',
-                            borderRadius: '14px',
-                            backgroundColor: activeShift ? '#22c55e' : '#f3f4f6',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <Clock style={{ width: '28px', height: '28px', color: activeShift ? 'white' : '#6b7280' }} />
+            <div className={`${styles.shiftCard} ${activeShift ? styles.shiftCardActive : ''}`}>
+                <div className={styles.shiftContent}>
+                    <div className={styles.shiftInfo}>
+                        <div className={`${styles.shiftIcon} ${activeShift ? styles.shiftIconActive : ''}`}>
+                            <Clock size={30} />
                         </div>
                         <div>
-                            <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                            <p className={styles.shiftLabel}>
                                 {activeShift ? 'Shift Duration' : 'Not Clocked In'}
                             </p>
-                            <p style={{ fontSize: '32px', fontWeight: '700', color: '#111827', margin: '4px 0 0 0', fontFamily: 'monospace' }}>
+                            <p className={styles.shiftTimer}>
                                 {activeShift ? shiftDuration : '--:--:--'}
                             </p>
                             {activeShift && (
-                                <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <MapPin style={{ width: '12px', height: '12px' }} />
+                                <p className={styles.shiftStarted}>
+                                    <MapPin size={14} />
                                     Started at {new Date(activeShift.clock_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </p>
                             )}
@@ -245,33 +219,18 @@ export default function WorkerDashboardPage() {
                     <button
                         onClick={activeShift ? handleClockOut : handleClockIn}
                         disabled={shiftLoading}
-                        style={{
-                            height: '48px',
-                            padding: '0 24px',
-                            backgroundColor: activeShift ? '#ef4444' : '#22c55e',
-                            color: 'white',
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            border: 'none',
-                            borderRadius: '12px',
-                            cursor: shiftLoading ? 'not-allowed' : 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            opacity: shiftLoading ? 0.7 : 1,
-                            boxShadow: activeShift ? '0 4px 14px rgba(239, 68, 68, 0.3)' : '0 4px 14px rgba(34, 197, 94, 0.3)'
-                        }}
+                        className={`${styles.shiftButton} ${activeShift ? styles.shiftButtonOut : styles.shiftButtonIn}`}
                     >
                         {shiftLoading ? (
-                            <div style={{ width: '20px', height: '20px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                            <div className={styles.buttonSpinner}></div>
                         ) : activeShift ? (
                             <>
-                                <Square style={{ width: '18px', height: '18px' }} />
+                                <Square size={18} />
                                 Clock Out
                             </>
                         ) : (
                             <>
-                                <Play style={{ width: '18px', height: '18px' }} />
+                                <Play size={18} />
                                 Clock In
                             </>
                         )}
@@ -280,143 +239,77 @@ export default function WorkerDashboardPage() {
             </div>
 
             {/* Quick Actions */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }}>
-                <Link href="/worker/record" style={{ textDecoration: 'none' }}>
-                    <div style={{ ...cardStyle, textAlign: 'center', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
-                        <div style={{
-                            width: '56px',
-                            height: '56px',
-                            borderRadius: '14px',
-                            backgroundColor: '#6366f1',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 12px auto'
-                        }}>
-                            <Mic style={{ width: '28px', height: '28px', color: 'white' }} />
-                        </div>
-                        <p style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: 0 }}>Record Entry</p>
-                        <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Voice log</p>
+            <div className={styles.actionsGrid}>
+                <Link href="/worker/record" className={styles.actionCard}>
+                    <div className={styles.actionIconRecord}>
+                        <Mic size={30} />
                     </div>
+                    <p className={styles.actionTitle}>Record Entry</p>
+                    <p className={styles.actionDesc}>Voice log</p>
                 </Link>
 
-                <Link href="/worker/entries" style={{ textDecoration: 'none' }}>
-                    <div style={{ ...cardStyle, textAlign: 'center', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
-                        <div style={{
-                            width: '56px',
-                            height: '56px',
-                            borderRadius: '14px',
-                            backgroundColor: '#22c55e',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 12px auto'
-                        }}>
-                            <FileText style={{ width: '28px', height: '28px', color: 'white' }} />
-                        </div>
-                        <p style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: 0 }}>My Entries</p>
-                        <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>View all</p>
+                <Link href="/worker/entries" className={styles.actionCard}>
+                    <div className={styles.actionIconEntries}>
+                        <FileText size={30} />
                     </div>
+                    <p className={styles.actionTitle}>My Entries</p>
+                    <p className={styles.actionDesc}>View all</p>
                 </Link>
             </div>
 
             {/* Recent Entries */}
-            <div style={cardStyle}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <div className={styles.card}>
+                <div className={styles.cardHeader}>
                     <div>
-                        <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: 0 }}>Recent Entries</h2>
-                        <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '2px' }}>Your latest field logs</p>
+                        <h2 className={styles.cardTitle}>Recent Entries</h2>
+                        <p className={styles.cardSubtitle}>Your latest field logs</p>
                     </div>
                     {recentEntries.length > 0 && (
-                        <Link href="/worker/entries" style={{
-                            fontSize: '14px',
-                            color: '#6366f1',
-                            textDecoration: 'none',
-                            fontWeight: '500'
-                        }}>
+                        <Link href="/worker/entries" className={styles.viewAllLink}>
                             View All
+                            <ArrowRight size={16} />
                         </Link>
                     )}
                 </div>
 
                 {loading ? (
-                    <div style={{ padding: '40px 0', textAlign: 'center' }}>
-                        <div style={{
-                            width: '24px',
-                            height: '24px',
-                            border: '3px solid #6366f1',
-                            borderTopColor: 'transparent',
-                            borderRadius: '50%',
-                            animation: 'spin 1s linear infinite',
-                            margin: '0 auto 12px auto'
-                        }} />
-                        <p style={{ fontSize: '14px', color: '#6b7280' }}>Loading...</p>
+                    <div className={styles.loadingState}>
+                        <div className={styles.spinner}></div>
+                        <p className={styles.loadingText}>Loading...</p>
                     </div>
                 ) : recentEntries.length === 0 ? (
-                    <div style={{ padding: '40px 0', textAlign: 'center' }}>
-                        <div style={{
-                            width: '56px',
-                            height: '56px',
-                            borderRadius: '14px',
-                            backgroundColor: '#f3f4f6',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 12px auto'
-                        }}>
-                            <AlertCircle style={{ width: '28px', height: '28px', color: '#9ca3af' }} />
+                    <div className={styles.emptyState}>
+                        <div className={styles.emptyIcon}>
+                            <AlertCircle size={32} />
                         </div>
-                        <p style={{ fontSize: '16px', fontWeight: '500', color: '#374151', margin: 0 }}>No entries yet</p>
-                        <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
-                            Record your first voice log to get started
-                        </p>
+                        <p className={styles.emptyTitle}>No entries yet</p>
+                        <p className={styles.emptyText}>Record your first voice log to get started</p>
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className={styles.entryList}>
                         {recentEntries.map((entry) => (
-                            <div
-                                key={entry.id}
-                                style={{
-                                    padding: '16px',
-                                    borderRadius: '12px',
-                                    backgroundColor: '#f9fafb',
-                                    border: '1px solid #e5e7eb'
-                                }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                                    <div style={{
-                                        width: '10px',
-                                        height: '10px',
-                                        borderRadius: '50%',
+                            <div key={entry.id} className={styles.entryItem}>
+                                <div
+                                    className={styles.entryStatus}
+                                    style={{
                                         backgroundColor: getStatusColor(entry.status),
-                                        marginTop: '6px',
-                                        flexShrink: 0
-                                    }} />
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <p style={{
-                                            fontSize: '14px',
-                                            color: '#374151',
-                                            margin: 0,
-                                            lineHeight: '1.5',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            display: '-webkit-box',
-                                            WebkitLineClamp: 2,
-                                            WebkitBoxOrient: 'vertical'
-                                        }}>
-                                            {entry.processed_text || entry.raw_transcript || 'No transcript available'}
-                                        </p>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', fontSize: '12px', color: '#6b7280' }}>
-                                            <span>{new Date(entry.created_at).toLocaleDateString()}</span>
-                                            <span>•</span>
-                                            <span>{new Date(entry.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                            {entry.client_name && (
-                                                <>
-                                                    <span>•</span>
-                                                    <span>{entry.client_name}</span>
-                                                </>
-                                            )}
-                                        </div>
+                                        boxShadow: `0 0 12px ${getStatusColor(entry.status)}60`
+                                    }}
+                                ></div>
+                                <div className={styles.entryContent}>
+                                    <p className={styles.entryText}>
+                                        {entry.processed_text || entry.raw_transcript || 'No transcript available'}
+                                    </p>
+                                    <div className={styles.entryMeta}>
+                                        <span>{new Date(entry.created_at).toLocaleDateString()}</span>
+                                        <span>•</span>
+                                        <span>{new Date(entry.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        {entry.client_name && (
+                                            <>
+                                                <span>•</span>
+                                                <span className={styles.entryClient}>{entry.client_name}</span>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -424,13 +317,6 @@ export default function WorkerDashboardPage() {
                     </div>
                 )}
             </div>
-
-            <style jsx global>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
         </div>
     );
 }

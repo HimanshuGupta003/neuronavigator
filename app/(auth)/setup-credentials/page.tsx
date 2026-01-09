@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { KeyRound, CheckCircle2, AlertCircle, User, Brain } from 'lucide-react';
+import { KeyRound, CheckCircle2, AlertCircle, User, Brain, ArrowRight } from 'lucide-react';
 
 function SetupCredentialsContent() {
     const router = useRouter();
@@ -94,25 +94,26 @@ function SetupCredentialsContent() {
     };
 
     const cardStyle: React.CSSProperties = {
-        backgroundColor: '#ffffff',
-        borderRadius: '16px',
-        padding: '32px',
-        border: '1px solid #e5e7eb',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+        backgroundColor: '#0a0a0a',
+        borderRadius: '20px',
+        padding: '36px',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
     };
 
     const inputStyle: React.CSSProperties = {
         width: '100%',
-        height: '48px',
-        padding: '0 16px',
+        height: '52px',
+        padding: '0 18px',
         fontSize: '16px',
-        color: '#111827',
-        backgroundColor: '#ffffff',
-        border: '2px solid #e5e7eb',
+        fontWeight: 500,
+        color: '#ffffff',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        border: '1.5px solid rgba(255, 255, 255, 0.1)',
         borderRadius: '12px',
         outline: 'none',
         boxSizing: 'border-box' as const,
-        transition: 'border-color 0.15s ease'
+        transition: 'all 0.2s ease'
     };
 
     if (step === 'loading') {
@@ -128,7 +129,7 @@ function SetupCredentialsContent() {
                         animation: 'spin 1s linear infinite',
                         margin: '0 auto 16px auto'
                     }} />
-                    <p style={{ color: '#6b7280', fontSize: '15px' }}>Verifying invitation...</p>
+                    <p style={{ color: '#737373', fontSize: '15px' }}>Verifying invitation...</p>
                 </div>
             </div>
         );
@@ -139,32 +140,34 @@ function SetupCredentialsContent() {
             <div style={cardStyle}>
                 <div style={{ textAlign: 'center', padding: '24px 0' }}>
                     <div style={{
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: '50%',
-                        backgroundColor: '#fef2f2',
+                        width: '68px',
+                        height: '68px',
+                        borderRadius: '18px',
+                        backgroundColor: 'rgba(239, 68, 68, 0.15)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        margin: '0 auto 16px auto'
+                        margin: '0 auto 20px auto',
+                        border: '1px solid rgba(239, 68, 68, 0.2)'
                     }}>
-                        <AlertCircle style={{ width: '32px', height: '32px', color: '#ef4444' }} />
+                        <AlertCircle style={{ width: '34px', height: '34px', color: '#f87171' }} />
                     </div>
-                    <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0' }}>
+                    <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#ffffff', margin: '0 0 10px 0' }}>
                         Invitation Error
                     </h2>
-                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 24px 0' }}>{error}</p>
+                    <p style={{ fontSize: '14px', color: '#737373', margin: '0 0 28px 0' }}>{error}</p>
                     <button
                         onClick={() => router.push('/login')}
                         style={{
-                            padding: '12px 24px',
-                            backgroundColor: '#f3f4f6',
-                            color: '#374151',
-                            border: 'none',
-                            borderRadius: '10px',
+                            padding: '14px 28px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            color: '#e5e5e5',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '12px',
                             fontSize: '14px',
                             fontWeight: '500',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
                         }}
                     >
                         Go to Login
@@ -179,24 +182,25 @@ function SetupCredentialsContent() {
             <div style={cardStyle}>
                 <div style={{ textAlign: 'center', padding: '24px 0' }}>
                     <div style={{
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: '50%',
-                        backgroundColor: '#f0fdf4',
+                        width: '68px',
+                        height: '68px',
+                        borderRadius: '18px',
+                        backgroundColor: 'rgba(34, 197, 94, 0.15)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        margin: '0 auto 16px auto'
+                        margin: '0 auto 20px auto',
+                        border: '1px solid rgba(34, 197, 94, 0.2)'
                     }}>
-                        <CheckCircle2 style={{ width: '32px', height: '32px', color: '#22c55e' }} />
+                        <CheckCircle2 style={{ width: '34px', height: '34px', color: '#4ade80' }} />
                     </div>
-                    <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0' }}>
+                    <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#ffffff', margin: '0 0 10px 0' }}>
                         Account Created!
                     </h2>
-                    <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                    <p style={{ fontSize: '14px', color: '#a3a3a3', margin: 0 }}>
                         Your account has been set up successfully.
                     </p>
-                    <p style={{ fontSize: '13px', color: '#9ca3af', marginTop: '8px' }}>
+                    <p style={{ fontSize: '13px', color: '#525252', marginTop: '12px' }}>
                         Redirecting to login...
                     </p>
                 </div>
@@ -206,11 +210,11 @@ function SetupCredentialsContent() {
 
     return (
         <div style={cardStyle}>
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#111827', margin: 0 }}>
+            <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#ffffff', margin: 0 }}>
                     Set Up Your Account
                 </h2>
-                <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
+                <p style={{ fontSize: '14px', color: '#737373', marginTop: '8px' }}>
                     Create your credentials to get started
                 </p>
             </div>
@@ -219,34 +223,34 @@ function SetupCredentialsContent() {
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
-                padding: '14px 16px',
-                backgroundColor: '#f8fafc',
-                borderRadius: '12px',
-                marginBottom: '24px',
-                border: '1px solid #e5e7eb'
+                gap: '14px',
+                padding: '16px 18px',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderRadius: '14px',
+                marginBottom: '28px',
+                border: '1px solid rgba(99, 102, 241, 0.2)'
             }}>
                 <div style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    backgroundColor: '#eef2ff',
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                 }}>
-                    <User style={{ width: '20px', height: '20px', color: '#6366f1' }} />
+                    <User style={{ width: '22px', height: '22px', color: 'white' }} />
                 </div>
                 <div>
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>Setting up account for</p>
-                    <p style={{ fontSize: '14px', fontWeight: '500', color: '#111827', margin: 0 }}>{invitation?.email}</p>
+                    <p style={{ fontSize: '12px', color: '#737373', margin: 0 }}>Setting up account for</p>
+                    <p style={{ fontSize: '15px', fontWeight: '500', color: '#ffffff', margin: 0 }}>{invitation?.email}</p>
                 </div>
             </div>
 
             <form onSubmit={handleSetup}>
                 {/* Full Name */}
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#e5e5e5', marginBottom: '10px' }}>
                         Full Name
                     </label>
                     <input
@@ -256,14 +260,20 @@ function SetupCredentialsContent() {
                         onChange={(e) => setFullName(e.target.value)}
                         required
                         style={inputStyle}
-                        onFocus={(e) => e.target.style.borderColor = '#6366f1'}
-                        onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = '#6366f1';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.2)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                            e.target.style.boxShadow = 'none';
+                        }}
                     />
                 </div>
 
                 {/* Password */}
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#e5e5e5', marginBottom: '10px' }}>
                         Password
                     </label>
                     <input
@@ -273,15 +283,21 @@ function SetupCredentialsContent() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         style={inputStyle}
-                        onFocus={(e) => e.target.style.borderColor = '#6366f1'}
-                        onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = '#6366f1';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.2)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                            e.target.style.boxShadow = 'none';
+                        }}
                     />
-                    <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '6px' }}>At least 8 characters</p>
+                    <p style={{ fontSize: '12px', color: '#525252', marginTop: '8px' }}>At least 8 characters</p>
                 </div>
 
                 {/* Confirm Password */}
-                <div style={{ marginBottom: '24px' }}>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                <div style={{ marginBottom: '28px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#e5e5e5', marginBottom: '10px' }}>
                         Confirm Password
                     </label>
                     <input
@@ -291,21 +307,43 @@ function SetupCredentialsContent() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         style={inputStyle}
-                        onFocus={(e) => e.target.style.borderColor = '#6366f1'}
-                        onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = '#6366f1';
+                            e.target.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.2)';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                            e.target.style.boxShadow = 'none';
+                        }}
                     />
                 </div>
 
                 {/* Error */}
                 {error && (
                     <div style={{
-                        padding: '12px 16px',
-                        backgroundColor: '#fef2f2',
-                        border: '1px solid #fecaca',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '14px 16px',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
                         borderRadius: '12px',
                         marginBottom: '20px'
                     }}>
-                        <p style={{ fontSize: '14px', color: '#dc2626', margin: 0 }}>{error}</p>
+                        <div style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            fontWeight: '700',
+                            color: '#f87171',
+                            flexShrink: 0
+                        }}>!</div>
+                        <p style={{ fontSize: '14px', color: '#f87171', margin: 0 }}>{error}</p>
                     </div>
                 )}
 
@@ -315,27 +353,29 @@ function SetupCredentialsContent() {
                     disabled={loading}
                     style={{
                         width: '100%',
-                        height: '48px',
-                        backgroundColor: loading ? '#a5b4fc' : '#6366f1',
+                        height: '54px',
+                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)',
                         color: 'white',
                         fontSize: '16px',
                         fontWeight: '600',
                         border: 'none',
-                        borderRadius: '12px',
+                        borderRadius: '14px',
                         cursor: loading ? 'not-allowed' : 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)'
+                        gap: '10px',
+                        boxShadow: '0 4px 16px rgba(99, 102, 241, 0.4)',
+                        opacity: loading ? 0.7 : 1,
+                        transition: 'all 0.2s ease'
                     }}
                 >
                     {loading ? (
                         <div style={{
-                            width: '20px',
-                            height: '20px',
-                            border: '2px solid white',
-                            borderTopColor: 'transparent',
+                            width: '22px',
+                            height: '22px',
+                            border: '2px solid rgba(255, 255, 255, 0.3)',
+                            borderTopColor: 'white',
                             borderRadius: '50%',
                             animation: 'spin 1s linear infinite'
                         }} />
@@ -343,6 +383,7 @@ function SetupCredentialsContent() {
                         <>
                             <KeyRound style={{ width: '20px', height: '20px' }} />
                             Create Account
+                            <ArrowRight style={{ width: '18px', height: '18px' }} />
                         </>
                     )}
                 </button>
@@ -355,45 +396,73 @@ export default function SetupCredentialsPage() {
     return (
         <div style={{
             minHeight: '100vh',
-            backgroundColor: '#f3f4f6',
+            backgroundColor: '#000000',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '20px'
+            padding: '24px',
+            position: 'relative',
+            overflow: 'hidden'
         }}>
+            {/* Background gradient orbs */}
+            <div style={{
+                position: 'absolute',
+                width: '500px',
+                height: '500px',
+                background: 'radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%)',
+                borderRadius: '50%',
+                top: '-200px',
+                right: '-100px',
+                filter: 'blur(40px)'
+            }} />
+            <div style={{
+                position: 'absolute',
+                width: '400px',
+                height: '400px',
+                background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)',
+                borderRadius: '50%',
+                bottom: '-150px',
+                left: '-100px',
+                filter: 'blur(40px)'
+            }} />
+
             {/* Logo */}
-            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '36px', position: 'relative', zIndex: 10 }}>
                 <div style={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: '64px',
-                    height: '64px',
-                    backgroundColor: '#6366f1',
-                    borderRadius: '16px',
-                    marginBottom: '16px',
-                    boxShadow: '0 10px 25px rgba(99, 102, 241, 0.3)'
+                    width: '70px',
+                    height: '70px',
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)',
+                    borderRadius: '20px',
+                    marginBottom: '18px',
+                    boxShadow: '0 10px 40px rgba(99, 102, 241, 0.4)'
                 }}>
-                    <Brain style={{ width: '32px', height: '32px', color: 'white' }} />
+                    <Brain style={{ width: '36px', height: '36px', color: 'white' }} />
                 </div>
-                <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>
-                    NeuroNavigator
+                <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', margin: 0 }}>
+                    <span style={{
+                        background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent'
+                    }}>Neuro</span>Navigator
                 </h1>
-                <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
+                <p style={{ fontSize: '14px', color: '#737373', marginTop: '6px' }}>
                     AI-Powered Field Reporting
                 </p>
             </div>
 
-            <div style={{ width: '100%', maxWidth: '420px' }}>
+            <div style={{ width: '100%', maxWidth: '440px', position: 'relative', zIndex: 10 }}>
                 <Suspense
                     fallback={
                         <div style={{
-                            backgroundColor: '#ffffff',
-                            borderRadius: '16px',
-                            padding: '48px 32px',
-                            border: '1px solid #e5e7eb',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            backgroundColor: '#0a0a0a',
+                            borderRadius: '20px',
+                            padding: '56px 36px',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
                             textAlign: 'center'
                         }}>
                             <div style={{
@@ -415,8 +484,10 @@ export default function SetupCredentialsPage() {
             <p style={{
                 textAlign: 'center',
                 fontSize: '14px',
-                color: '#9ca3af',
-                marginTop: '24px'
+                color: 'rgba(255, 255, 255, 0.3)',
+                marginTop: '32px',
+                position: 'relative',
+                zIndex: 10
             }}>
                 © {new Date().getFullYear()} NeuroNavigator. All rights reserved.
             </p>
