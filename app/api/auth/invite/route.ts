@@ -40,32 +40,16 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if user already exists
+        // Check if user already has a complete profile (already fully set up)
         const { data: existingProfile } = await adminClient
             .from('profiles')
-            .select('id')
+            .select('id, full_name')
             .eq('email', email)
             .single();
 
-        if (existingProfile) {
+        if (existingProfile && existingProfile.full_name) {
             return NextResponse.json(
-                { success: false, error: 'A user with this email already exists' },
-                { status: 400 }
-            );
-        }
-
-        // Check for existing pending invitation
-        const { data: existingInvitation } = await adminClient
-            .from('invitations')
-            .select('id')
-            .eq('email', email)
-            .is('used_at', null)
-            .gt('expires_at', new Date().toISOString())
-            .single();
-
-        if (existingInvitation) {
-            return NextResponse.json(
-                { success: false, error: 'A pending invitation already exists for this email' },
+                { success: false, error: 'This worker already has a complete account' },
                 { status: 400 }
             );
         }
@@ -77,32 +61,62 @@ export async function POST(request: NextRequest) {
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);
 
-        // Create invitation record in our database
-        const { error: insertError } = await adminClient
+        // Check for existing pending invitation and update or create
+        const { data: existingInvitation } = await adminClient
             .from('invitations')
-            .insert({
-                email,
-                token,
-                invited_by: user.id,
-                expires_at: expiresAt.toISOString(),
-            });
+            .select('id')
+            .eq('email', email)
+            .is('used_at', null)
+            .single();
 
-        if (insertError) {
-            console.error('Insert error:', insertError);
-            return NextResponse.json(
-                { success: false, error: 'Failed to create invitation' },
-                { status: 500 }
-            );
+        if (existingInvitation) {
+            // Update existing invitation with new token and expiry
+            await adminClient
+                .from('invitations')
+                .update({
+                    token,
+                    expires_at: expiresAt.toISOString(),
+                })
+                .eq('id', existingInvitation.id);
+        } else {
+            // Create new invitation record
+            const { error: insertError } = await adminClient
+                .from('invitations')
+                .insert({
+                    email,
+                    token,
+                    invited_by: user.id,
+                    expires_at: expiresAt.toISOString(),
+                });
+
+            if (insertError) {
+                console.error('Insert error:', insertError);
+                return NextResponse.json(
+                    { success: false, error: 'Failed to create invitation' },
+                    { status: 500 }
+                );
+            }
         }
 
         // Generate invitation link
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const invitationLink = `${appUrl}/setup-credentials?token=${token}`;
 
-        // Use Supabase's built-in invite functionality
+        // Check if user already exists in Supabase Auth
+        const { data: existingUsers } = await adminClient.auth.admin.listUsers();
+        const existingAuthUser = existingUsers?.users?.find(u => u.email === email);
+
         let emailSent = false;
-        try {
-            // Try to send invitation via Supabase Auth
+        let emailError: string | null = null;
+
+        if (existingAuthUser) {
+            // User exists in auth - delete and recreate to send fresh invite
+            console.log('User exists, deleting and re-inviting...');
+
+            // Delete existing auth user (they haven't set up yet)
+            await adminClient.auth.admin.deleteUser(existingAuthUser.id);
+
+            // Now send fresh invite
             const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
                 redirectTo: invitationLink,
                 data: {
@@ -113,15 +127,29 @@ export async function POST(request: NextRequest) {
 
             if (inviteError) {
                 console.error('Supabase invite error:', inviteError);
-                // If Supabase invite fails (e.g., rate limit), we still have the manual link
-                emailSent = false;
+                emailError = inviteError.message;
             } else {
-                console.log('Supabase invitation sent:', inviteData);
+                console.log('Invite sent successfully:', inviteData);
                 emailSent = true;
             }
-        } catch (inviteErr) {
-            console.error('Supabase invite exception:', inviteErr);
-            emailSent = false;
+        } else {
+            // New user - send invite email via Supabase
+            console.log('New user, sending invite email...');
+            const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+                redirectTo: invitationLink,
+                data: {
+                    role: 'worker',
+                    invited_by: user.id,
+                }
+            });
+
+            if (inviteError) {
+                console.error('Supabase invite error:', inviteError);
+                emailError = inviteError.message;
+            } else {
+                console.log('Invite sent successfully:', inviteData);
+                emailSent = true;
+            }
         }
 
         return NextResponse.json({
@@ -131,7 +159,7 @@ export async function POST(request: NextRequest) {
                 emailSent,
                 message: emailSent
                     ? 'Invitation email sent successfully via Supabase!'
-                    : 'Invitation created. Please share the link manually (email rate limit may have been reached).'
+                    : 'Invitation created. Share the link manually if email was not received.'
             },
         });
 
