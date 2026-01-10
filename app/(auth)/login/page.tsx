@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { LogIn, Shield, Brain, Mail, Lock, Check, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import styles from './login.module.css';
 
-export default function LoginPage() {
+function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const supabase = createClient();
@@ -312,5 +312,24 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className={styles.container}>
+                <div className={styles.rightPanel}>
+                    <div className={styles.formContainer}>
+                        <div className={styles.card} style={{ textAlign: 'center', padding: '60px' }}>
+                            <div className={styles.buttonSpinner} style={{ margin: '0 auto 16px auto' }}></div>
+                            <p style={{ color: '#64748b' }}>Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     );
 }

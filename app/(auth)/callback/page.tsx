@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import styles from './callback.module.css';
 
-export default function AuthCallbackPage() {
+function CallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const supabase = createClient();
@@ -21,7 +21,6 @@ export default function AuthCallbackPage() {
             const hashParams = new URLSearchParams(window.location.hash.substring(1));
             const accessToken = hashParams.get('access_token');
             const refreshToken = hashParams.get('refresh_token');
-            const type = hashParams.get('type');
 
             // Also check query params
             const error = searchParams.get('error');
@@ -47,7 +46,6 @@ export default function AuthCallbackPage() {
                 }
 
                 if (data.user) {
-                    // Check if this is an invite (user has no password set / new user)
                     // Check if user has a profile with full_name set
                     const { data: profile } = await supabase
                         .from('profiles')
@@ -86,5 +84,20 @@ export default function AuthCallbackPage() {
                 <p className={styles.status}>{status}</p>
             </div>
         </div>
+    );
+}
+
+export default function AuthCallbackPage() {
+    return (
+        <Suspense fallback={
+            <div className={styles.container}>
+                <div className={styles.card}>
+                    <div className={styles.spinner}></div>
+                    <p className={styles.status}>Loading...</p>
+                </div>
+            </div>
+        }>
+            <CallbackContent />
+        </Suspense>
     );
 }
