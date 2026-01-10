@@ -1,0 +1,112 @@
+/* Worker Entries Page Styles - Glassmorphism Theme */
+
+.container {
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Header */
+.header {
+    margin-bottom: 32px;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.subtitle {
+    font-size: 15px;
+    color: #737373;
+    margin-top: 6px;
+}
+
+/* Card */
+.card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Coming Soon */
+.comingSoon {
+    padding: 64px 24px;
+    text-align: center;
+}
+
+.iconContainer {
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.15) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px auto;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+}
+
+.comingTitle {
+    font-size: 22px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 12px 0;
+}
+
+.comingText {
+    font-size: 15px;
+    color: #737373;
+    max-width: 340px;
+    margin: 0 auto 32px auto;
+    line-height: 1.6;
+}
+
+.featureList {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.featureItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    font-size: 14px;
+    color: #a3a3a3;
+}
+
+.featureItem svg {
+    color: #4ade80;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .container {
+        padding: 20px 16px;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+
+    .comingSoon {
+        padding: 48px 16px;
+    }
+
+    .featureList {
+        flex-direction: column;
+        align-items: center;
+    }
+}

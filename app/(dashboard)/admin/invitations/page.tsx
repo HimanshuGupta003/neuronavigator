@@ -88,19 +88,19 @@ export default function InvitationsPage() {
             {/* Header */}
             <div className={styles.header}>
                 <h1 className={styles.title}>Invitations</h1>
-                <p className={styles.subtitle}>Invite workers to join the platform</p>
+                <p className={styles.subtitle}>Invite Job Coaches to join the platform</p>
             </div>
 
             {/* Invite Form */}
             <div className={styles.card}>
-                <h2 className={styles.cardTitle}>Invite New Worker</h2>
-                <p className={styles.cardSubtitle}>Send an invitation link to a worker's email address</p>
+                <h2 className={styles.cardTitle}>Invite New Job Coach</h2>
+                <p className={styles.cardSubtitle}>Send an invitation link to a Job Coach's email address</p>
 
                 <form onSubmit={handleInvite} className={styles.inviteForm}>
                     <div className={styles.formRow}>
                         <input
                             type="email"
-                            placeholder="Enter worker's email address"
+                            placeholder="Enter Job Coach's email address"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -123,7 +123,7 @@ export default function InvitationsPage() {
                             <p className={styles.successText}>
                                 {success.emailSent
                                     ? '✓ Invitation email sent successfully!'
-                                    : '✓ Invitation created! Share the link below with the worker:'}
+                                    : '✓ Invitation created! Share the link below with the Job Coach:'}
                             </p>
                             <div className={styles.linkRow}>
                                 <code className={styles.linkCode}>

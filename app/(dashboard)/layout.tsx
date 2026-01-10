@@ -4,7 +4,7 @@ import { useEffect, useState, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Brain, LogOut, Users, FileText, Home, Mic, ClipboardList, Bell, Sparkles } from 'lucide-react';
+import { Brain, LogOut, Users, FileText, Home, Mic, ClipboardList, Bell, Sparkles, AlertTriangle } from 'lucide-react';
 import { Profile } from '@/lib/types';
 import styles from './dashboard.module.css';
 
@@ -66,15 +66,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         router.push('/login');
     };
 
+    const handleSOS = () => {
+        // SOS functionality - can be expanded later
+        alert('SOS Alert! In a real scenario, this would notify supervisors immediately.');
+    };
+
     if (loading) {
         return (
             <div className={styles.container}>
-                <div className={styles.background}>
-                    <div className={styles.gradientOrb1}></div>
-                    <div className={styles.gradientOrb2}></div>
-                    <div className={styles.gradientOrb3}></div>
-                    <div className={styles.gridOverlay}></div>
-                </div>
                 <div className={styles.loadingContainer}>
                     <div className={styles.loadingSpinner}></div>
                     <p className={styles.loadingText}>Loading...</p>
@@ -85,47 +84,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     const isAdmin = profile?.role === 'admin';
 
+    // Updated terminology: Workers → Job Coaches
     const adminNavItems = [
         { href: '/admin', icon: Home, label: 'Dashboard' },
-        { href: '/admin/workers', icon: Users, label: 'Workers' },
+        { href: '/admin/workers', icon: Users, label: 'Job Coaches' },
         { href: '/admin/invitations', icon: Bell, label: 'Invitations' },
         { href: '/admin/reports', icon: FileText, label: 'Reports' },
     ];
 
-    const workerNavItems = [
+    // Job Coach navigation with Clients
+    const coachNavItems = [
         { href: '/worker', icon: Home, label: 'Dashboard' },
+        { href: '/worker/clients', icon: Users, label: 'Clients' },
         { href: '/worker/record', icon: Mic, label: 'Record' },
         { href: '/worker/entries', icon: ClipboardList, label: 'Entries' },
         { href: '/worker/reports', icon: FileText, label: 'Reports' },
     ];
 
-    const navItems = isAdmin ? adminNavItems : workerNavItems;
+    const navItems = isAdmin ? adminNavItems : coachNavItems;
 
     return (
         <div className={styles.container}>
-            {/* Animated Background */}
-            <div className={styles.background}>
-                <div className={styles.gradientOrb1}></div>
-                <div className={styles.gradientOrb2}></div>
-                <div className={styles.gradientOrb3}></div>
-                <div className={styles.gridOverlay}></div>
-            </div>
-
-            {/* Floating Particles */}
-            <div className={styles.particles}>
-                {mounted && [...Array(12)].map((_, i) => (
-                    <div
-                        key={i}
-                        className={styles.particle}
-                        style={{
-                            left: `${(i * 8) + Math.random() * 5}%`,
-                            animationDelay: `${i * 0.5}s`,
-                            animationDuration: `${18 + i * 2}s`
-                        }}
-                    />
-                ))}
-            </div>
-
             {/* Top Header */}
             <header className={styles.header}>
                 <div className={styles.headerContent}>
@@ -140,13 +119,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             </span>
                             <span className={styles.roleBadge}>
                                 <Sparkles size={10} />
-                                {isAdmin ? 'Admin' : 'Worker'}
+                                {isAdmin ? 'Admin' : 'Job Coach'}
                             </span>
                         </div>
                     </div>
 
-                    {/* User info */}
+                    {/* Right section with SOS and user info */}
                     <div className={styles.userSection}>
+                        {/* SOS Button - Always Visible */}
+                        {!isAdmin && (
+                            <button onClick={handleSOS} className={styles.sosButton}>
+                                <AlertTriangle size={18} />
+                                <span>SOS</span>
+                            </button>
+                        )}
+
                         <div className={styles.userInfo}>
                             <div className={styles.userAvatar}>
                                 {profile?.full_name?.charAt(0) || 'U'}
@@ -187,7 +174,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Mobile Bottom Navigation */}
             <nav className={`${styles.mobileNav} mobile-nav`}>
-                {navItems.map((item) => {
+                {navItems.slice(0, 5).map((item) => {
                     const isActive = pathname === item.href;
                     return (
                         <Link

@@ -10,12 +10,12 @@ import styles from './admin.module.css';
 export default function AdminDashboardPage() {
     const supabase = createClient();
     const [stats, setStats] = useState({
-        totalWorkers: 0,
+        totalCoaches: 0,
         pendingInvitations: 0,
         totalEntries: 0,
         todayEntries: 0,
     });
-    const [recentWorkers, setRecentWorkers] = useState<Profile[]>([]);
+    const [recentCoaches, setRecentCoaches] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -24,7 +24,7 @@ export default function AdminDashboardPage() {
 
     async function loadDashboard() {
         try {
-            const { count: workersCount } = await supabase
+            const { count: coachesCount } = await supabase
                 .from('profiles')
                 .select('*', { count: 'exact', head: true })
                 .eq('role', 'worker');
@@ -46,7 +46,7 @@ export default function AdminDashboardPage() {
                 .select('*', { count: 'exact', head: true })
                 .gte('created_at', today.toISOString());
 
-            const { data: workers } = await supabase
+            const { data: coaches } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('role', 'worker')
@@ -54,14 +54,14 @@ export default function AdminDashboardPage() {
                 .limit(5);
 
             setStats({
-                totalWorkers: workersCount || 0,
+                totalCoaches: coachesCount || 0,
                 pendingInvitations: invitationsCount || 0,
                 totalEntries: entriesCount || 0,
                 todayEntries: todayCount || 0,
             });
 
-            if (workers) {
-                setRecentWorkers(workers as Profile[]);
+            if (coaches) {
+                setRecentCoaches(coaches as Profile[]);
             }
         } catch (error) {
             console.error('Failed to load dashboard:', error);
@@ -70,41 +70,36 @@ export default function AdminDashboardPage() {
         }
     }
 
+    // Removed "Total Workers" stat as per client request
     const statCards = [
-        { label: 'Total Workers', value: stats.totalWorkers, icon: Users, color: '#818cf8' },
-        { label: 'Pending Invitations', value: stats.pendingInvitations, icon: UserPlus, color: '#fbbf24' },
-        { label: 'Total Entries', value: stats.totalEntries, icon: FileText, color: '#4ade80' },
-        { label: 'Today\'s Entries', value: stats.todayEntries, icon: TrendingUp, color: '#60a5fa' },
+        { label: 'Job Coaches', value: stats.totalCoaches, icon: Users, color: '#0284c7' },
+        { label: 'Pending Invitations', value: stats.pendingInvitations, icon: UserPlus, color: '#ca8a04' },
+        { label: 'Total Notes', value: stats.totalEntries, icon: FileText, color: '#16a34a' },
+        { label: 'Today\'s Notes', value: stats.todayEntries, icon: TrendingUp, color: '#7c3aed' },
     ];
 
     const quickActions = [
-        { label: 'Manage Workers', description: 'View and manage all workers', icon: Users, href: '/admin/workers', color: '#818cf8' },
-        { label: 'View Reports', description: 'Browse generated reports', icon: FileText, href: '/admin/reports', color: '#4ade80' },
-        { label: 'Invitations', description: 'Manage pending invitations', icon: UserPlus, href: '/admin/invitations', color: '#fbbf24' },
+        { href: '/admin/invitations', icon: UserPlus, label: 'Invite Coach', color: '#0284c7' },
+        { href: '/admin/workers', icon: Users, label: 'View Coaches', color: '#16a34a' },
+        { href: '/admin/reports', icon: FileText, label: 'Reports', color: '#7c3aed' },
     ];
 
     return (
         <div className={styles.container}>
             {/* Header */}
             <div className={styles.header}>
-                <div>
-                    <h1 className={styles.title}>Admin Dashboard</h1>
-                    <p className={styles.subtitle}>Manage workers and monitor activity</p>
-                </div>
-                <Link href="/admin/invitations" className={styles.inviteButton}>
-                    <UserPlus size={18} />
-                    Invite Worker
-                </Link>
+                <h1 className={styles.title}>Admin Dashboard</h1>
+                <p className={styles.subtitle}>Manage your Job Coaches and view reports</p>
             </div>
 
             {/* Stats Grid */}
             <div className={styles.statsGrid}>
-                {statCards.map((stat) => (
-                    <div key={stat.label} className={styles.statCard}>
-                        <div className={styles.statIcon} style={{ backgroundColor: `${stat.color}20`, borderColor: `${stat.color}40` }}>
-                            <stat.icon size={26} style={{ color: stat.color }} />
+                {statCards.map((stat, i) => (
+                    <div key={i} className={styles.statCard}>
+                        <div className={styles.statIcon} style={{ background: `${stat.color}15`, color: stat.color }}>
+                            <stat.icon size={24} />
                         </div>
-                        <div className={styles.statContent}>
+                        <div className={styles.statInfo}>
                             <p className={styles.statValue}>{loading ? '-' : stat.value}</p>
                             <p className={styles.statLabel}>{stat.label}</p>
                         </div>
@@ -112,70 +107,64 @@ export default function AdminDashboardPage() {
                 ))}
             </div>
 
-            {/* Recent Workers */}
+            {/* Quick Actions */}
+            <div className={styles.card}>
+                <h2 className={styles.cardTitle}>Quick Actions</h2>
+                <div className={styles.actionsGrid}>
+                    {quickActions.map((action, i) => (
+                        <Link key={i} href={action.href} className={styles.actionCard}>
+                            <div className={styles.actionIcon} style={{ background: `${action.color}15`, color: action.color }}>
+                                <action.icon size={24} />
+                            </div>
+                            <span className={styles.actionLabel}>{action.label}</span>
+                            <ArrowRight size={18} className={styles.actionArrow} />
+                        </Link>
+                    ))}
+                </div>
+            </div>
+
+            {/* Recent Coaches */}
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <div>
-                        <h2 className={styles.cardTitle}>Recent Workers</h2>
-                        <p className={styles.cardSubtitle}>Latest workers added to the system</p>
+                        <h2 className={styles.cardTitle}>Recent Job Coaches</h2>
+                        <p className={styles.cardSubtitle}>Recently added coaches</p>
                     </div>
-                    {recentWorkers.length > 0 && (
-                        <Link href="/admin/workers" className={styles.viewAllLink}>
-                            View All
-                            <ArrowRight size={16} />
-                        </Link>
-                    )}
+                    <Link href="/admin/workers" className={styles.viewAllLink}>
+                        View All
+                        <ArrowRight size={16} />
+                    </Link>
                 </div>
 
                 {loading ? (
                     <div className={styles.loadingState}>
                         <div className={styles.spinner}></div>
                     </div>
-                ) : recentWorkers.length === 0 ? (
+                ) : recentCoaches.length === 0 ? (
                     <div className={styles.emptyState}>
-                        <div className={styles.emptyIcon}>
-                            <Users size={32} />
-                        </div>
-                        <p className={styles.emptyTitle}>No workers yet</p>
-                        <p className={styles.emptyText}>Invite workers to get started</p>
+                        <Users size={32} className={styles.emptyIcon} />
+                        <p className={styles.emptyTitle}>No coaches yet</p>
+                        <p className={styles.emptyText}>Invite your first Job Coach to get started</p>
                     </div>
                 ) : (
-                    <div className={styles.workerList}>
-                        {recentWorkers.map((worker) => (
-                            <div key={worker.id} className={styles.workerItem}>
-                                <div className={styles.workerInfo}>
-                                    <div className={styles.workerAvatar}>
-                                        {worker.full_name?.charAt(0) || worker.email.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <p className={styles.workerName}>{worker.full_name || 'Unnamed'}</p>
-                                        <p className={styles.workerEmail}>{worker.email}</p>
-                                    </div>
+                    <div className={styles.coachList}>
+                        {recentCoaches.map((coach) => (
+                            <div key={coach.id} className={styles.coachItem}>
+                                <div className={styles.coachAvatar}>
+                                    {coach.full_name?.charAt(0) || 'J'}
                                 </div>
-                                <div className={styles.workerDate}>
+                                <div className={styles.coachInfo}>
+                                    <p className={styles.coachName}>{coach.full_name || 'Job Coach'}</p>
+                                    <p className={styles.coachEmail}>{coach.email}</p>
+                                </div>
+                                <div className={styles.coachMeta}>
                                     <Clock size={14} />
-                                    {new Date(worker.created_at).toLocaleDateString()}
+                                    {new Date(coach.created_at).toLocaleDateString()}
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
-            </div>
-
-            {/* Quick Actions */}
-            <div className={styles.actionsGrid}>
-                {quickActions.map((action) => (
-                    <Link key={action.href} href={action.href} className={styles.actionCard}>
-                        <div className={styles.actionIcon} style={{ backgroundColor: `${action.color}20`, borderColor: `${action.color}40` }}>
-                            <action.icon size={24} style={{ color: action.color }} />
-                        </div>
-                        <div className={styles.actionContent}>
-                            <p className={styles.actionTitle}>{action.label}</p>
-                            <p className={styles.actionDesc}>{action.description}</p>
-                        </div>
-                        <ArrowRight size={20} className={styles.actionArrow} />
-                    </Link>
-                ))}
             </div>
         </div>
     );

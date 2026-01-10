@@ -7,17 +7,17 @@ import { Profile } from '@/lib/types';
 import Link from 'next/link';
 import styles from './workers.module.css';
 
-export default function WorkersPage() {
+export default function JobCoachesPage() {
     const supabase = createClient();
-    const [workers, setWorkers] = useState<Profile[]>([]);
+    const [coaches, setCoaches] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
 
     useEffect(() => {
-        loadWorkers();
+        loadCoaches();
     }, []);
 
-    async function loadWorkers() {
+    async function loadCoaches() {
         try {
             const { data } = await supabase
                 .from('profiles')
@@ -26,18 +26,18 @@ export default function WorkersPage() {
                 .order('created_at', { ascending: false });
 
             if (data) {
-                setWorkers(data as Profile[]);
+                setCoaches(data as Profile[]);
             }
         } catch (error) {
-            console.error('Failed to load workers:', error);
+            console.error('Failed to load coaches:', error);
         } finally {
             setLoading(false);
         }
     }
 
-    const filteredWorkers = workers.filter(w =>
-        w.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-        w.email.toLowerCase().includes(search.toLowerCase())
+    const filteredCoaches = coaches.filter(c =>
+        c.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+        c.email.toLowerCase().includes(search.toLowerCase())
     );
 
     return (
@@ -45,75 +45,69 @@ export default function WorkersPage() {
             {/* Header */}
             <div className={styles.header}>
                 <div>
-                    <h1 className={styles.title}>Workers</h1>
-                    <p className={styles.subtitle}>Manage all registered workers</p>
+                    <h1 className={styles.title}>Job Coaches</h1>
+                    <p className={styles.subtitle}>Manage all registered Job Coaches</p>
                 </div>
                 <Link href="/admin/invitations" className={styles.inviteButton}>
                     <UserPlus size={18} />
-                    Invite Worker
+                    Invite Coach
                 </Link>
             </div>
 
-            {/* Workers Card */}
-            <div className={styles.card}>
-                {/* Search */}
+            {/* Search & Count */}
+            <div className={styles.searchSection}>
                 <div className={styles.searchContainer}>
                     <Search size={18} className={styles.searchIcon} />
                     <input
                         type="text"
-                        placeholder="Search workers..."
+                        placeholder="Search coaches..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className={styles.searchInput}
                     />
                 </div>
+                <p className={styles.coachCount}>{filteredCoaches.length} coaches</p>
+            </div>
 
+            {/* Coaches Card */}
+            <div className={styles.card}>
                 {loading ? (
                     <div className={styles.loadingState}>
                         <div className={styles.spinner}></div>
                     </div>
-                ) : filteredWorkers.length === 0 ? (
+                ) : filteredCoaches.length === 0 ? (
                     <div className={styles.emptyState}>
                         <div className={styles.emptyIcon}>
                             <Users size={32} />
                         </div>
                         <p className={styles.emptyTitle}>
-                            {search ? 'No workers found' : 'No workers yet'}
+                            {search ? 'No coaches found' : 'No Job Coaches yet'}
                         </p>
                         <p className={styles.emptyText}>
-                            {search ? 'Try a different search term' : 'Invite workers to get started'}
+                            {search ? 'Try a different search term' : 'Invite Job Coaches to get started'}
                         </p>
                     </div>
                 ) : (
-                    <div className={styles.workerList}>
-                        {filteredWorkers.map((worker) => (
-                            <div key={worker.id} className={styles.workerItem}>
-                                <div className={styles.workerInfo}>
-                                    <div className={styles.workerAvatar}>
-                                        {worker.full_name?.charAt(0) || worker.email.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <p className={styles.workerName}>
-                                            {worker.full_name || 'Unnamed'}
-                                        </p>
-                                        <p className={styles.workerEmail}>{worker.email}</p>
-                                    </div>
+                    <div className={styles.coachList}>
+                        {filteredCoaches.map((coach) => (
+                            <div key={coach.id} className={styles.coachItem}>
+                                <div className={styles.coachAvatar}>
+                                    {coach.full_name?.charAt(0) || coach.email.charAt(0).toUpperCase()}
                                 </div>
-                                <div className={styles.workerDate}>
-                                    <Clock size={14} />
-                                    Joined {new Date(worker.created_at).toLocaleDateString()}
+                                <div className={styles.coachInfo}>
+                                    <p className={styles.coachName}>
+                                        {coach.full_name || 'Unnamed Coach'}
+                                    </p>
+                                    <p className={styles.coachEmail}>{coach.email}</p>
+                                </div>
+                                <div className={styles.coachMeta}>
+                                    <span className={styles.coachDate}>
+                                        <Clock size={14} />
+                                        Joined {new Date(coach.created_at).toLocaleDateString()}
+                                    </span>
                                 </div>
                             </div>
                         ))}
-                    </div>
-                )}
-
-                {/* Count */}
-                {!loading && filteredWorkers.length > 0 && (
-                    <div className={styles.countSection}>
-                        <p className={styles.countText}>
-                            Showing {filteredWorkers.length} of {workers.length} workers
-                        </p>
                     </div>
                 )}
             </div>

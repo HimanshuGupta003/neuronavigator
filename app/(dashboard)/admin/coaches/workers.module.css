@@ -1,0 +1,255 @@
+/* Workers Page Styles - Glassmorphism Theme */
+
+.container {
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.subtitle {
+    font-size: 15px;
+    color: #737373;
+    margin-top: 6px;
+}
+
+.inviteButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    transition: all 0.3s ease;
+}
+
+.inviteButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+}
+
+/* Card */
+.card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Search */
+.searchContainer {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #525252;
+}
+
+.searchInput {
+    width: 100%;
+    height: 52px;
+    padding-left: 52px;
+    padding-right: 18px;
+    font-size: 15px;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.searchInput::placeholder {
+    color: #525252;
+}
+
+.searchInput:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Loading/Empty States */
+.loadingState {
+    padding: 48px 0;
+    text-align: center;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(99, 102, 241, 0.3);
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.emptyState {
+    padding: 56px 0;
+    text-align: center;
+}
+
+.emptyIcon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px auto;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #525252;
+}
+
+.emptyTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e5e5e5;
+    margin: 0;
+}
+
+.emptyText {
+    font-size: 14px;
+    color: #737373;
+    margin-top: 8px;
+}
+
+/* Worker List */
+.workerList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.workerItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 12px;
+    flex-wrap: wrap;
+    transition: all 0.2s ease;
+}
+
+.workerItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.workerInfo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.workerAvatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.workerName {
+    font-size: 15px;
+    font-weight: 500;
+    color: #ffffff;
+    margin: 0;
+}
+
+.workerEmail {
+    font-size: 13px;
+    color: #737373;
+    margin: 2px 0 0 0;
+}
+
+.workerDate {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #525252;
+}
+
+/* Count Section */
+.countSection {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.countText {
+    font-size: 13px;
+    color: #737373;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .container {
+        padding: 20px 16px;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .inviteButton {
+        justify-content: center;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+}

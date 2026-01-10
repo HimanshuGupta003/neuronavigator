@@ -5,14 +5,13 @@ import { createClient } from '@/lib/supabase/client';
 import { Mic, Clock, FileText, Play, Square, MapPin, AlertCircle, ArrowRight, Users } from 'lucide-react';
 import { Profile, Shift, Entry } from '@/lib/types';
 import Link from 'next/link';
-import styles from './worker.module.css';
+import styles from './coach.module.css';
 
 export default function CoachDashboardPage() {
     const supabase = createClient();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [activeShift, setActiveShift] = useState<Shift | null>(null);
     const [recentEntries, setRecentEntries] = useState<Entry[]>([]);
-    const [clientCount, setClientCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [shiftLoading, setShiftLoading] = useState(false);
     const [shiftDuration, setShiftDuration] = useState('0:00:00');
@@ -62,7 +61,7 @@ export default function CoachDashboardPage() {
             const { data: shiftData } = await supabase
                 .from('shifts')
                 .select('*')
-                .eq('worker_id', user.id)
+                .eq('coach_id', user.id)
                 .is('clock_out_at', null)
                 .order('clock_in_at', { ascending: false })
                 .limit(1)
@@ -72,20 +71,10 @@ export default function CoachDashboardPage() {
                 setActiveShift(shiftData as Shift);
             }
 
-            // Get client count
-            const { count } = await supabase
-                .from('clients')
-                .select('*', { count: 'exact', head: true })
-                .eq('coach_id', user.id);
-
-            if (count !== null) {
-                setClientCount(count);
-            }
-
             const { data: entriesData } = await supabase
                 .from('entries')
                 .select('*')
-                .eq('worker_id', user.id)
+                .eq('coach_id', user.id)
                 .order('created_at', { ascending: false })
                 .limit(5);
 
@@ -126,7 +115,7 @@ export default function CoachDashboardPage() {
             const { data, error } = await supabase
                 .from('shifts')
                 .insert({
-                    worker_id: user.id,
+                    coach_id: user.id,
                     clock_in_at: new Date().toISOString(),
                     clock_in_lat: lat,
                     clock_in_lng: lng,
@@ -185,10 +174,10 @@ export default function CoachDashboardPage() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'green': return '#16a34a';
-            case 'yellow': return '#ca8a04';
-            case 'red': return '#dc2626';
-            default: return '#64748b';
+            case 'green': return '#43a047';
+            case 'yellow': return '#ffa726';
+            case 'red': return '#e53935';
+            default: return '#9e9e9e';
         }
     };
 
@@ -200,35 +189,35 @@ export default function CoachDashboardPage() {
                     Welcome back{profile?.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}!
                 </h1>
                 <p className={styles.subtitle}>
-                    {activeShift ? "You're currently clocked in" : 'Ready to start your shift?'}
+                    {activeShift ? "You're currently clocked in" : 'Clock in to start your shift'}
                 </p>
             </div>
 
-            {/* Large Clock In Button - Prominent */}
+            {/* Large Green CLOCK IN Button - Prominent as per client request */}
             {!activeShift && (
                 <button
                     onClick={handleClockIn}
                     disabled={shiftLoading}
-                    className={styles.clockInButton}
+                    className={styles.bigClockInButton}
                 >
                     {shiftLoading ? (
                         <div className={styles.buttonSpinner}></div>
                     ) : (
                         <>
-                            <Play size={28} />
+                            <Play size={32} />
                             <span>CLOCK IN</span>
                         </>
                     )}
                 </button>
             )}
 
-            {/* Active Shift Card */}
+            {/* Shift Timer Card (when clocked in) */}
             {activeShift && (
                 <div className={styles.shiftCard}>
                     <div className={styles.shiftContent}>
                         <div className={styles.shiftInfo}>
                             <div className={styles.shiftIcon}>
-                                <Clock size={28} />
+                                <Clock size={30} />
                             </div>
                             <div>
                                 <p className={styles.shiftLabel}>Shift Duration</p>
@@ -243,7 +232,7 @@ export default function CoachDashboardPage() {
                         <button
                             onClick={handleClockOut}
                             disabled={shiftLoading}
-                            className={styles.clockOutButton}
+                            className={styles.shiftButtonOut}
                         >
                             {shiftLoading ? (
                                 <div className={styles.buttonSpinner}></div>
@@ -260,34 +249,28 @@ export default function CoachDashboardPage() {
 
             {/* Quick Actions */}
             <div className={styles.actionsGrid}>
-                <Link href="/worker/clients" className={styles.actionCard}>
-                    <div className={styles.actionIconClients}>
-                        <Users size={28} />
-                    </div>
-                    <div className={styles.actionInfo}>
-                        <p className={styles.actionTitle}>My Clients</p>
-                        <p className={styles.actionCount}>{clientCount} clients</p>
-                    </div>
-                </Link>
-
-                <Link href="/worker/record" className={styles.actionCard}>
+                <Link href="/coach/record" className={styles.actionCard}>
                     <div className={styles.actionIconRecord}>
-                        <Mic size={28} />
+                        <Mic size={30} />
                     </div>
-                    <div className={styles.actionInfo}>
-                        <p className={styles.actionTitle}>Record Note</p>
-                        <p className={styles.actionCount}>Voice log</p>
-                    </div>
+                    <p className={styles.actionTitle}>Record Entry</p>
+                    <p className={styles.actionDesc}>Voice log</p>
                 </Link>
 
-                <Link href="/worker/entries" className={styles.actionCard}>
+                <Link href="/coach/clients" className={styles.actionCard}>
+                    <div className={styles.actionIconClients}>
+                        <Users size={30} />
+                    </div>
+                    <p className={styles.actionTitle}>My Clients</p>
+                    <p className={styles.actionDesc}>Manage</p>
+                </Link>
+
+                <Link href="/coach/entries" className={styles.actionCard}>
                     <div className={styles.actionIconEntries}>
-                        <FileText size={28} />
+                        <FileText size={30} />
                     </div>
-                    <div className={styles.actionInfo}>
-                        <p className={styles.actionTitle}>Entries</p>
-                        <p className={styles.actionCount}>View all</p>
-                    </div>
+                    <p className={styles.actionTitle}>My Entries</p>
+                    <p className={styles.actionDesc}>View all</p>
                 </Link>
             </div>
 
@@ -295,11 +278,11 @@ export default function CoachDashboardPage() {
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <div>
-                        <h2 className={styles.cardTitle}>Recent Notes</h2>
+                        <h2 className={styles.cardTitle}>Recent Entries</h2>
                         <p className={styles.cardSubtitle}>Your latest field logs</p>
                     </div>
                     {recentEntries.length > 0 && (
-                        <Link href="/worker/entries" className={styles.viewAllLink}>
+                        <Link href="/coach/entries" className={styles.viewAllLink}>
                             View All
                             <ArrowRight size={16} />
                         </Link>
@@ -316,7 +299,7 @@ export default function CoachDashboardPage() {
                         <div className={styles.emptyIcon}>
                             <AlertCircle size={32} />
                         </div>
-                        <p className={styles.emptyTitle}>No notes yet</p>
+                        <p className={styles.emptyTitle}>No entries yet</p>
                         <p className={styles.emptyText}>Record your first voice log to get started</p>
                     </div>
                 ) : (
@@ -325,7 +308,10 @@ export default function CoachDashboardPage() {
                             <div key={entry.id} className={styles.entryItem}>
                                 <div
                                     className={styles.entryStatus}
-                                    style={{ backgroundColor: getStatusColor(entry.status) }}
+                                    style={{
+                                        backgroundColor: getStatusColor(entry.status),
+                                        boxShadow: `0 0 12px ${getStatusColor(entry.status)}40`
+                                    }}
                                 ></div>
                                 <div className={styles.entryContent}>
                                     <p className={styles.entryText}>
@@ -335,12 +321,6 @@ export default function CoachDashboardPage() {
                                         <span>{new Date(entry.created_at).toLocaleDateString()}</span>
                                         <span>•</span>
                                         <span>{new Date(entry.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                        {entry.client_name && (
-                                            <>
-                                                <span>•</span>
-                                                <span className={styles.entryClient}>{entry.client_name}</span>
-                                            </>
-                                        )}
                                     </div>
                                 </div>
                             </div>

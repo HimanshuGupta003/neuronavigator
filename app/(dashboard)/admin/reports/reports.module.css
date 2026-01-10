@@ -1,4 +1,4 @@
-/* Reports Page Styles - Glassmorphism Theme */
+/* Admin Reports Page - Light Theme with Medical Blue */
 
 .container {
     padding: 24px;
@@ -8,87 +8,84 @@
 
 /* Header */
 .header {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
 .title {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
-    color: #ffffff;
+    color: #1e293b;
     margin: 0;
 }
 
 .subtitle {
     font-size: 15px;
-    color: #737373;
+    color: #64748b;
     margin-top: 6px;
 }
 
 /* Card */
 .card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: #ffffff;
     border-radius: 20px;
     padding: 28px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Coming Soon */
 .comingSoon {
-    padding: 64px 24px;
+    padding: 60px 0;
     text-align: center;
 }
 
-.iconContainer {
+.comingSoonIcon {
     width: 80px;
     height: 80px;
     border-radius: 24px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.1) 0%, rgba(3, 105, 161, 0.1) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 24px auto;
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    color: #818cf8;
+    color: #0284c7;
 }
 
-.comingTitle {
+.comingSoonTitle {
     font-size: 22px;
-    font-weight: 600;
-    color: #ffffff;
+    font-weight: 700;
+    color: #1e293b;
     margin: 0 0 12px 0;
 }
 
-.comingText {
+.comingSoonText {
     font-size: 15px;
-    color: #737373;
-    max-width: 340px;
-    margin: 0 auto 32px auto;
+    color: #64748b;
+    margin: 0 auto;
+    max-width: 300px;
     line-height: 1.6;
 }
 
 .featureList {
     display: flex;
-    justify-content: center;
-    gap: 24px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 28px;
+    max-width: 260px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .featureItem {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    gap: 10px;
     font-size: 14px;
-    color: #a3a3a3;
+    color: #475569;
 }
 
-.featureItem svg {
-    color: #818cf8;
+.featureIcon {
+    color: #16a34a;
 }
 
 /* Responsive */
@@ -98,15 +95,6 @@
     }
 
     .title {
-        font-size: 24px;
-    }
-
-    .comingSoon {
-        padding: 48px 16px;
-    }
-
-    .featureList {
-        flex-direction: column;
-        align-items: center;
+        font-size: 22px;
     }
 }

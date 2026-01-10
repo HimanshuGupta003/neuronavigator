@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { LogIn, Shield, Brain, Mail, Lock, Sparkles, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { LogIn, Shield, Brain, Mail, Lock, Sparkles, ArrowRight, Eye, EyeOff, Check } from 'lucide-react';
 import styles from './login.module.css';
 
 export default function LoginPage() {
@@ -15,12 +15,6 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [focusedField, setFocusedField] = useState<string | null>(null);
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,23 +30,15 @@ export default function LoginPage() {
             if (authError) throw authError;
 
             if (data.user) {
-                console.log('User logged in:', data.user.id);
-
-                const { data: profile, error: profileError } = await supabase
+                const { data: profile } = await supabase
                     .from('profiles')
                     .select('role')
                     .eq('id', data.user.id)
                     .single();
 
-                console.log('Profile data:', profile);
-                console.log('Profile error:', profileError);
-                console.log('Role:', profile?.role);
-
                 if (profile?.role === 'admin') {
-                    console.log('Redirecting to /admin');
                     router.push('/admin');
                 } else {
-                    console.log('Redirecting to /worker');
                     router.push('/worker');
                 }
                 router.refresh();
@@ -66,130 +52,109 @@ export default function LoginPage() {
 
     return (
         <div className={styles.container}>
-            {/* Animated Background */}
-            <div className={styles.background}>
-                <div className={styles.gradientOrb1}></div>
-                <div className={styles.gradientOrb2}></div>
-                <div className={styles.gradientOrb3}></div>
-                <div className={styles.gridOverlay}></div>
-            </div>
+            {/* Decorative Background Orbs */}
+            <div className={`${styles.decorativeOrb} ${styles.orb1}`}></div>
+            <div className={`${styles.decorativeOrb} ${styles.orb2}`}></div>
 
-            {/* Floating Particles */}
-            <div className={styles.particles}>
-                {[...Array(20)].map((_, i) => (
-                    <div
-                        key={i}
-                        className={styles.particle}
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 5}s`,
-                            animationDuration: `${15 + Math.random() * 10}s`
-                        }}
-                    />
-                ))}
-            </div>
-
-            {/* Main Content */}
-            <div className={`${styles.content} ${mounted ? styles.mounted : ''}`}>
-                {/* Left Side - Branding */}
-                <div className={styles.brandingSide}>
-                    <div className={styles.brandingContent}>
-                        <div className={styles.logoContainer}>
-                            <div className={styles.logoRing}>
-                                <div className={styles.logoRingInner}></div>
-                            </div>
-                            <div className={styles.logoIcon}>
-                                <Brain className={styles.brainIcon} />
-                            </div>
-                            <div className={styles.logoPulse}></div>
+            {/* Left Panel - Branding (Desktop Only) */}
+            <div className={styles.leftPanel}>
+                <div className={styles.leftPanelContent}>
+                    <div className={styles.brandLogo}>
+                        <div className={styles.logoIcon}>
+                            <Brain size={32} />
                         </div>
+                        <div>
+                            <h1 className={styles.brandName}>NeuroNavigator</h1>
+                            <p className={styles.brandTagline}>AI-Powered Field Reporting</p>
+                        </div>
+                    </div>
 
-                        <h1 className={styles.brandTitle}>
-                            <span className={styles.brandGradient}>Neuro</span>Navigator
-                        </h1>
-                        <p className={styles.brandSubtitle}>
-                            AI-Powered Field Reporting & Analytics
-                        </p>
+                    <h2 className={styles.heroTitle}>
+                        Streamline Your<br />Field Operations
+                    </h2>
+                    <p className={styles.heroSubtitle}>
+                        Empower your Job Coaches with intelligent note-taking,
+                        real-time tracking, and automated report generation.
+                    </p>
 
-                        <div className={styles.featureList}>
-                            <div className={styles.featureItem}>
-                                <div className={styles.featureIcon}>
-                                    <Sparkles size={18} />
-                                </div>
-                                <span>Intelligent Report Generation</span>
+                    <div className={styles.featureList}>
+                        <div className={styles.featureItem}>
+                            <div className={styles.featureIcon}>
+                                <Check size={18} />
                             </div>
-                            <div className={styles.featureItem}>
-                                <div className={styles.featureIcon}>
-                                    <Shield size={18} />
-                                </div>
-                                <span>Enterprise-Grade Security</span>
+                            <span>Voice-to-text notes with AI processing</span>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <div className={styles.featureIcon}>
+                                <Check size={18} />
                             </div>
-                            <div className={styles.featureItem}>
-                                <div className={styles.featureIcon}>
-                                    <Brain size={18} />
-                                </div>
-                                <span>Neural Processing Engine</span>
+                            <span>Client tracking and mood monitoring</span>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <div className={styles.featureIcon}>
+                                <Check size={18} />
                             </div>
+                            <span>Automated monthly report generation</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Right Side - Login Form */}
-                <div className={styles.formSide}>
-                    <div className={styles.glassCard}>
-                        <div className={styles.cardGlow}></div>
-
-                        <div className={styles.formHeader}>
-                            <h2 className={styles.formTitle}>Welcome Back</h2>
-                            <p className={styles.formSubtitle}>
-                                Sign in to access your intelligent dashboard
-                            </p>
+            {/* Right Panel - Login Form */}
+            <div className={styles.rightPanel}>
+                <div className={styles.formContainer}>
+                    {/* Mobile Logo */}
+                    <div className={styles.mobileLogo}>
+                        <div className={styles.mobileLogoIcon}>
+                            <Brain size={36} />
                         </div>
+                        <h1 className={styles.mobileLogoText}>
+                            <span className={styles.mobileLogoGradient}>Neuro</span>Navigator
+                        </h1>
+                    </div>
+
+                    {/* Card */}
+                    <div className={styles.card}>
+                        <h2 className={styles.cardTitle}>Welcome Back</h2>
+                        <p className={styles.cardSubtitle}>
+                            Sign in to access your dashboard
+                        </p>
 
                         <form onSubmit={handleLogin} className={styles.form}>
                             {/* Email Field */}
-                            <div className={`${styles.inputGroup} ${focusedField === 'email' ? styles.focused : ''} ${email ? styles.hasFilled : ''}`}>
+                            <div className={styles.inputGroup}>
                                 <label htmlFor="email" className={styles.inputLabel}>
                                     Email Address
                                 </label>
                                 <div className={styles.inputWrapper}>
-                                    <div className={styles.inputIcon}>
-                                        <Mail size={20} />
-                                    </div>
+                                    <Mail size={20} className={styles.inputIcon} />
                                     <input
                                         type="email"
                                         id="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        onFocus={() => setFocusedField('email')}
-                                        onBlur={() => setFocusedField(null)}
                                         required
-                                        className={styles.input}
+                                        className={`${styles.input} ${email ? styles.inputFilled : ''}`}
                                         placeholder="Enter your email"
                                         autoComplete="email"
                                     />
-                                    <div className={styles.inputBorder}></div>
                                 </div>
                             </div>
 
                             {/* Password Field */}
-                            <div className={`${styles.inputGroup} ${focusedField === 'password' ? styles.focused : ''} ${password ? styles.hasFilled : ''}`}>
+                            <div className={styles.inputGroup}>
                                 <label htmlFor="password" className={styles.inputLabel}>
                                     Password
                                 </label>
                                 <div className={styles.inputWrapper}>
-                                    <div className={styles.inputIcon}>
-                                        <Lock size={20} />
-                                    </div>
+                                    <Lock size={20} className={styles.inputIcon} />
                                     <input
                                         type={showPassword ? 'text' : 'password'}
                                         id="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        onFocus={() => setFocusedField('password')}
-                                        onBlur={() => setFocusedField(null)}
                                         required
-                                        className={styles.input}
+                                        className={`${styles.input} ${password ? styles.inputFilled : ''}`}
                                         placeholder="Enter your password"
                                         autoComplete="current-password"
                                     />
@@ -201,10 +166,8 @@ export default function LoginPage() {
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
-                                    <div className={styles.inputBorder}></div>
                                 </div>
                             </div>
-
 
                             {/* Error Message */}
                             {error && (
@@ -220,40 +183,29 @@ export default function LoginPage() {
                                 disabled={loading}
                                 className={styles.submitButton}
                             >
-                                <span className={styles.buttonContent}>
-                                    {loading ? (
-                                        <>
-                                            <div className={styles.spinner}></div>
-                                            <span>Authenticating...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <LogIn size={20} />
-                                            <span>Sign In</span>
-                                            <ArrowRight size={18} className={styles.arrowIcon} />
-                                        </>
-                                    )}
-                                </span>
-                                <div className={styles.buttonGlow}></div>
+                                {loading ? (
+                                    <>
+                                        <div className={styles.buttonSpinner}></div>
+                                        <span>Signing in...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <LogIn size={20} />
+                                        <span>Sign In</span>
+                                        <ArrowRight size={18} />
+                                    </>
+                                )}
                             </button>
                         </form>
 
-                        {/* Footer Info */}
-                        <div className={styles.cardFooter}>
-                            <div className={styles.securityBadge}>
-                                <Shield size={14} />
-                                <span>Secure B2B Access</span>
-                            </div>
-                            <p className={styles.footerNote}>
-                                Workers must be invited by an administrator
+                        {/* Footer */}
+                        <div className={styles.footer}>
+                            <p className={styles.footerText}>
+                                <Shield size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                                Job Coaches must be invited by an administrator
                             </p>
                         </div>
                     </div>
-
-                    {/* Copyright */}
-                    <p className={styles.copyright}>
-                        © {new Date().getFullYear()} NeuroNavigator. All rights reserved.
-                    </p>
                 </div>
             </div>
         </div>

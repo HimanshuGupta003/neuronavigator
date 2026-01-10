@@ -1,4 +1,4 @@
-/* Workers (Job Coaches) Page - Light Theme with Medical Blue */
+/* Clients Page - Light Theme with Medical Blue */
 
 .container {
     padding: 24px;
@@ -29,7 +29,7 @@
     margin-top: 4px;
 }
 
-.inviteButton {
+.addButton {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -42,17 +42,16 @@
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    text-decoration: none;
     box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
     transition: all 0.2s ease;
 }
 
-.inviteButton:hover {
+.addButton:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
 }
 
-/* Search */
+/* Search Section */
 .searchSection {
     display: flex;
     align-items: center;
@@ -99,7 +98,7 @@
     background: #ffffff;
 }
 
-.coachCount {
+.clientCount {
     font-size: 14px;
     color: #64748b;
     font-weight: 500;
@@ -170,32 +169,48 @@
     margin-top: 8px;
 }
 
-/* Coach List */
-.coachList {
+.emptyButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 12px 24px;
+    min-height: 48px;
+    background: #0284c7;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Client List */
+.clientList {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.coachItem {
+.clientItem {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 18px 20px;
+    padding: 16px 20px;
     background: #f8fafc;
     border-radius: 14px;
     border: 1px solid #e2e8f0;
     transition: all 0.2s ease;
 }
 
-.coachItem:hover {
+.clientItem:hover {
     background: #f1f5f9;
     border-color: #cbd5e1;
 }
 
-.coachAvatar {
-    width: 52px;
-    height: 52px;
+.clientAvatar {
+    width: 48px;
+    height: 48px;
     border-radius: 14px;
     background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     display: flex;
@@ -207,38 +222,183 @@
     flex-shrink: 0;
 }
 
-.coachInfo {
+.clientInfo {
     flex: 1;
     min-width: 0;
 }
 
-.coachName {
+.clientName {
     font-size: 16px;
     font-weight: 600;
     color: #1e293b;
     margin: 0;
 }
 
-.coachEmail {
-    font-size: 14px;
-    color: #64748b;
-    margin-top: 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.clientMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 6px;
 }
 
-.coachMeta {
-    text-align: right;
-}
-
-.coachDate {
+.metaItem {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
+    gap: 4px;
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Modal */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.modal {
+    background: #ffffff;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 24px 0 24px;
+}
+
+.modalTitle {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.closeButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.closeButton:hover {
+    background: #e2e8f0;
+}
+
+/* Form */
+.form {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.inputLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.input {
+    height: 52px;
+    padding: 0 16px;
+    font-size: 16px;
+    color: #1e293b;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.input::placeholder {
     color: #94a3b8;
-    justify-content: flex-end;
+}
+
+.input:focus {
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+    background: #ffffff;
+}
+
+.errorBox {
+    padding: 14px 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    color: #dc2626;
+    font-size: 14px;
+}
+
+.modalActions {
+    display: flex;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+.cancelButton {
+    flex: 1;
+    height: 52px;
+    min-height: 48px;
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+    background: #e2e8f0;
+}
+
+.submitButton {
+    flex: 1;
+    height: 52px;
+    min-height: 48px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+    transition: all 0.2s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+}
+
+.submitButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 /* Responsive */
@@ -252,7 +412,7 @@
         align-items: stretch;
     }
 
-    .inviteButton {
+    .addButton {
         justify-content: center;
     }
 
@@ -267,15 +427,5 @@
 
     .searchContainer {
         max-width: none;
-    }
-
-    .coachItem {
-        flex-wrap: wrap;
-    }
-
-    .coachMeta {
-        width: 100%;
-        text-align: left;
-        margin-top: 8px;
     }
 }

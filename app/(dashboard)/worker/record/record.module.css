@@ -1,94 +1,289 @@
-/* Worker Record Page Styles - Glassmorphism Theme */
+/* Record Page - Light Theme with Medical Blue */
 
 .container {
     padding: 24px;
-    max-width: 900px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
 /* Header */
 .header {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
+    text-align: center;
 }
 
 .title {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
-    color: #ffffff;
+    color: #1e293b;
     margin: 0;
 }
 
 .subtitle {
     font-size: 15px;
-    color: #737373;
+    color: #64748b;
     margin-top: 6px;
 }
 
 /* Card */
 .card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 32px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    text-align: center;
+}
+
+/* Mood Selector */
+.moodSection {
+    margin-bottom: 32px;
+}
+
+.moodLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+}
+
+.moodButtons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.moodButton {
+    width: 72px;
+    height: 72px;
     border-radius: 20px;
-    padding: 28px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 3px solid #e2e8f0;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.moodButton:hover {
+    transform: scale(1.08);
+}
+
+.moodButtonGreen {
+    border-color: #16a34a;
+    background: rgba(22, 163, 74, 0.1);
+}
+
+.moodButtonYellow {
+    border-color: #ca8a04;
+    background: rgba(202, 138, 4, 0.1);
+}
+
+.moodButtonRed {
+    border-color: #dc2626;
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.moodButtonActive {
+    transform: scale(1.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Client Selector */
+.clientSection {
+    margin-bottom: 32px;
+}
+
+.clientLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.clientSelect {
+    width: 100%;
+    height: 52px;
+    padding: 0 16px;
+    font-size: 16px;
+    color: #1e293b;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clientSelect:focus {
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+}
+
+/* Record Button */
+.recordSection {
+    margin-bottom: 24px;
+}
+
+.recordButton {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.2s ease;
+}
+
+.recordButtonIdle {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    box-shadow: 0 8px 32px rgba(2, 132, 199, 0.4);
+}
+
+.recordButtonIdle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 40px rgba(2, 132, 199, 0.5);
+}
+
+.recordButtonRecording {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    box-shadow: 0 8px 32px rgba(220, 38, 38, 0.4);
+    animation: pulse-record 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-record {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+}
+
+.recordIcon {
+    color: white;
+}
+
+.recordStatus {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-top: 20px;
+}
+
+.recordStatusRecording {
+    color: #dc2626;
+}
+
+/* Transcript Section */
+.transcriptSection {
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+.transcriptLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 12px;
+}
+
+.transcriptBox {
+    padding: 20px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    min-height: 120px;
+}
+
+.transcriptText {
+    font-size: 15px;
+    color: #334155;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.transcriptPlaceholder {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Submit Button */
+.submitButton {
+    width: 100%;
+    height: 56px;
+    min-height: 48px;
+    margin-top: 24px;
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+    transition: all 0.2s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+}
+
+.submitButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 /* Coming Soon */
 .comingSoon {
-    padding: 64px 24px;
+    padding: 60px 0;
     text-align: center;
 }
 
-.iconContainer {
+.comingSoonIcon {
     width: 80px;
     height: 80px;
     border-radius: 24px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.1) 0%, rgba(3, 105, 161, 0.1) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 24px auto;
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    color: #818cf8;
+    color: #0284c7;
 }
 
-.comingTitle {
+.comingSoonTitle {
     font-size: 22px;
-    font-weight: 600;
-    color: #ffffff;
+    font-weight: 700;
+    color: #1e293b;
     margin: 0 0 12px 0;
 }
 
-.comingText {
+.comingSoonText {
     font-size: 15px;
-    color: #737373;
-    max-width: 340px;
-    margin: 0 auto 32px auto;
+    color: #64748b;
+    margin: 0;
+    max-width: 300px;
+    margin: 0 auto;
     line-height: 1.6;
-}
-
-.featureList {
-    display: flex;
-    justify-content: center;
-    gap: 24px;
-    flex-wrap: wrap;
-}
-
-.featureItem {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    font-size: 14px;
-    color: #a3a3a3;
-}
-
-.featureItem svg {
-    color: #818cf8;
 }
 
 /* Responsive */
@@ -98,15 +293,21 @@
     }
 
     .title {
-        font-size: 24px;
+        font-size: 22px;
     }
 
-    .comingSoon {
-        padding: 48px 16px;
+    .card {
+        padding: 24px;
     }
 
-    .featureList {
-        flex-direction: column;
-        align-items: center;
+    .recordButton {
+        width: 100px;
+        height: 100px;
+    }
+
+    .moodButton {
+        width: 64px;
+        height: 64px;
+        font-size: 30px;
     }
 }
