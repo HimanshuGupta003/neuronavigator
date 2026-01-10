@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { LogIn, Shield, Brain, Mail, Lock, Sparkles, ArrowRight, Eye, EyeOff, Check } from 'lucide-react';
+import { LogIn, Shield, Brain, Mail, Lock, Check, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import styles from './login.module.css';
 
 export default function LoginPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const supabase = createClient();
 
     const [email, setEmail] = useState('');
@@ -15,6 +16,87 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [checkingAuth, setCheckingAuth] = useState(true);
+
+    useEffect(() => {
+        handleAuthCheck();
+    }, []);
+
+    async function handleAuthCheck() {
+        try {
+            // Check for error in URL (from Supabase redirect)
+            const urlError = searchParams.get('error');
+            const errorDesc = searchParams.get('error_description');
+
+            if (urlError) {
+                if (errorDesc?.includes('expired')) {
+                    setError('The invitation link has expired. Please ask your administrator to send a new invitation.');
+                } else {
+                    setError(errorDesc || urlError);
+                }
+                setCheckingAuth(false);
+                return;
+            }
+
+            // Check for hash fragment with access token (Supabase puts tokens in hash)
+            const hash = window.location.hash;
+            if (hash && hash.includes('access_token')) {
+                const hashParams = new URLSearchParams(hash.substring(1));
+                const accessToken = hashParams.get('access_token');
+                const refreshToken = hashParams.get('refresh_token');
+
+                if (accessToken && refreshToken) {
+                    // Set the session
+                    const { data, error: sessionError } = await supabase.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: refreshToken,
+                    });
+
+                    if (!sessionError && data.user) {
+                        // Check if user needs to complete profile
+                        const { data: profile } = await supabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', data.user.id)
+                            .single();
+
+                        if (!profile || !profile.full_name) {
+                            // New user - redirect to complete profile
+                            router.push('/complete-profile');
+                            return;
+                        } else {
+                            // Existing user - redirect to dashboard
+                            const { data: roleData } = await supabase
+                                .from('profiles')
+                                .select('role')
+                                .eq('id', data.user.id)
+                                .single();
+
+                            router.push(roleData?.role === 'admin' ? '/admin' : '/worker');
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // Check if already logged in
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+
+                router.push(profile?.role === 'admin' ? '/admin' : '/worker');
+                return;
+            }
+        } catch (err) {
+            console.error('Auth check error:', err);
+        } finally {
+            setCheckingAuth(false);
+        }
+    }
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,11 +118,7 @@ export default function LoginPage() {
                     .eq('id', data.user.id)
                     .single();
 
-                if (profile?.role === 'admin') {
-                    router.push('/admin');
-                } else {
-                    router.push('/worker');
-                }
+                router.push(profile?.role === 'admin' ? '/admin' : '/worker');
                 router.refresh();
             }
         } catch (err) {
@@ -49,6 +127,21 @@ export default function LoginPage() {
             setLoading(false);
         }
     };
+
+    if (checkingAuth) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.rightPanel}>
+                    <div className={styles.formContainer}>
+                        <div className={styles.card} style={{ textAlign: 'center', padding: '60px' }}>
+                            <div className={styles.buttonSpinner} style={{ margin: '0 auto 16px auto' }}></div>
+                            <p style={{ color: '#64748b' }}>Checking authentication...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.container}>
@@ -121,6 +214,17 @@ export default function LoginPage() {
                         </p>
 
                         <form onSubmit={handleLogin} className={styles.form}>
+                            {/* Error Message - Show at top if from URL */}
+                            {error && error.includes('expired') && (
+                                <div className={styles.expiredError}>
+                                    <AlertTriangle size={20} />
+                                    <div>
+                                        <strong>Link Expired</strong>
+                                        <p>Please ask your administrator to send a new invitation.</p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Email Field */}
                             <div className={styles.inputGroup}>
                                 <label htmlFor="email" className={styles.inputLabel}>
@@ -169,8 +273,8 @@ export default function LoginPage() {
                                 </div>
                             </div>
 
-                            {/* Error Message */}
-                            {error && (
+                            {/* Error Message - Login errors */}
+                            {error && !error.includes('expired') && (
                                 <div className={styles.errorContainer}>
                                     <div className={styles.errorIcon}>!</div>
                                     <p className={styles.errorText}>{error}</p>
@@ -192,7 +296,6 @@ export default function LoginPage() {
                                     <>
                                         <LogIn size={20} />
                                         <span>Sign In</span>
-                                        <ArrowRight size={18} />
                                     </>
                                 )}
                             </button>

@@ -401,3 +401,34 @@
     align-items: center;
     justify-content: center;
 }
+
+/* Expired Error */
+.expiredError {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    color: #92400e;
+}
+
+.expiredError svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.expiredError strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.expiredError p {
+    font-size: 13px;
+    margin: 0;
+    line-height: 1.4;
+}

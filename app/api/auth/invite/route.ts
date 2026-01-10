@@ -98,9 +98,10 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // Generate invitation link
+        // Generate invitation link - redirect to callback which will handle the flow
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const invitationLink = `${appUrl}/setup-credentials?token=${token}`;
+        const supabaseRedirectUrl = `${appUrl}/callback`;
 
         // Check if user already exists in Supabase Auth
         const { data: existingUsers } = await adminClient.auth.admin.listUsers();
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
 
             // Now send fresh invite
             const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-                redirectTo: invitationLink,
+                redirectTo: supabaseRedirectUrl,
                 data: {
                     role: 'worker',
                     invited_by: user.id,
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
             // New user - send invite email via Supabase
             console.log('New user, sending invite email...');
             const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-                redirectTo: invitationLink,
+                redirectTo: supabaseRedirectUrl,
                 data: {
                     role: 'worker',
                     invited_by: user.id,
