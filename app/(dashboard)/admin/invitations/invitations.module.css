@@ -12,7 +12,7 @@
 }
 
 .title {
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 700;
     color: #1e293b;
     margin: 0;
@@ -31,14 +31,14 @@
     padding: 28px;
     border: 1px solid #e2e8f0;
     margin-bottom: 24px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
 .cardTitle {
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
     color: #1e293b;
-    margin: 0 0 8px 0;
+    margin: 0 0 6px 0;
 }
 
 .cardSubtitle {
@@ -50,22 +50,21 @@
 /* Invite Form */
 .inviteForm {
     display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
+    flex-direction: column;
+    gap: 16px;
 }
 
-@media (max-width: 640px) {
-    .inviteForm {
-        flex-direction: column;
-    }
+.formRow {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
 }
 
 .emailInput {
     flex: 1;
     min-width: 0;
-    width: 100%;
-    height: 52px;
-    padding: 0 18px;
+    height: 56px;
+    padding: 0 20px;
     font-size: 16px;
     color: #1e293b;
     background: #f8fafc;
@@ -81,16 +80,17 @@
 
 .emailInput:focus {
     border-color: #0284c7;
-    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+    box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
     background: #ffffff;
 }
 
 .sendButton {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 28px;
-    min-height: 52px;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 32px;
+    height: 56px;
     background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     color: white;
     border: none;
@@ -101,11 +101,12 @@
     box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
     transition: all 0.2s ease;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .sendButton:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    box-shadow: 0 8px 25px rgba(2, 132, 199, 0.4);
 }
 
 .sendButton:disabled {
@@ -113,40 +114,47 @@
     cursor: not-allowed;
 }
 
-/* Success Message */
-.successMessage {
-    padding: 18px 20px;
-    background: rgba(22, 163, 74, 0.1);
-    border: 1px solid rgba(22, 163, 74, 0.2);
+/* Error Box */
+.errorBox {
+    padding: 16px 20px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
     border-radius: 14px;
-    margin-bottom: 16px;
+    color: #dc2626;
+    font-size: 14px;
+    font-weight: 500;
 }
 
-.successTitle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* Success Box */
+.successBox {
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(22, 163, 74, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%);
+    border: 1px solid rgba(22, 163, 74, 0.2);
+    border-radius: 16px;
+}
+
+.successText {
     font-size: 15px;
     font-weight: 600;
     color: #16a34a;
-    margin: 0 0 12px 0;
+    margin: 0 0 14px 0;
 }
 
-.linkBox {
+.linkRow {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     background: #ffffff;
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 12px 16px;
     border: 1px solid #e2e8f0;
 }
 
-.linkText {
+.linkCode {
     flex: 1;
     font-size: 13px;
     color: #64748b;
-    font-family: monospace;
+    font-family: ui-monospace, monospace;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -155,59 +163,64 @@
 .copyButton {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
+    gap: 8px;
+    padding: 12px 20px;
     min-height: 48px;
     background: #1e293b;
     color: white;
     border: none;
     border-radius: 10px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .copyButton:hover {
     background: #334155;
+    transform: translateY(-1px);
 }
 
 /* Error Message */
 .errorMessage {
-    padding: 16px 18px;
+    padding: 16px 20px;
+    margin: 0 28px 28px;
     background: #fef2f2;
     border: 1px solid #fecaca;
-    border-radius: 12px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     color: #dc2626;
     font-size: 14px;
+    font-weight: 500;
 }
 
 /* All Invitations Section */
 .sectionTitle {
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
     color: #1e293b;
-    margin: 0 0 8px 0;
+    margin: 0 0 6px 0;
+    padding: 28px 28px 0;
 }
 
 .sectionSubtitle {
     font-size: 14px;
     color: #64748b;
     margin: 0 0 20px 0;
+    padding: 0 28px;
 }
 
 /* Loading/Empty States */
 .loadingState {
-    padding: 40px 0;
+    padding: 48px 0;
     text-align: center;
 }
 
 .spinner {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border: 3px solid #e2e8f0;
     border-top-color: #0284c7;
     border-radius: 50%;
@@ -216,34 +229,29 @@
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .emptyState {
-    padding: 48px 0;
+    padding: 56px 28px;
     text-align: center;
 }
 
 .emptyIcon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    background: #f1f5f9;
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 16px auto;
+    margin: 0 auto 20px auto;
     color: #94a3b8;
 }
 
 .emptyTitle {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
     color: #334155;
     margin: 0;
@@ -259,28 +267,37 @@
 .invitationList {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    padding: 0 28px 28px;
 }
 
 .invitationItem {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px 18px;
+    gap: 16px;
+    padding: 18px 20px;
     background: #f8fafc;
-    border-radius: 14px;
+    border-radius: 16px;
     border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.invitationItem:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .invitationIcon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: #e2e8f0;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #64748b;
+    color: #ffffff;
     flex-shrink: 0;
 }
 
@@ -290,13 +307,16 @@
 }
 
 .invitationEmail {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     color: #1e293b;
     margin: 0;
 }
 
 .invitationMeta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 13px;
     color: #64748b;
     margin-top: 4px;
@@ -309,33 +329,33 @@
 }
 
 .statusBadge {
-    padding: 8px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
 }
 
 .statusPending {
-    background: rgba(202, 138, 4, 0.1);
-    color: #ca8a04;
+    background: linear-gradient(135deg, rgba(202, 138, 4, 0.15) 0%, rgba(202, 138, 4, 0.1) 100%);
+    color: #a16207;
 }
 
 .statusUsed {
-    background: rgba(22, 163, 74, 0.1);
-    color: #16a34a;
+    background: linear-gradient(135deg, rgba(22, 163, 74, 0.15) 0%, rgba(22, 163, 74, 0.1) 100%);
+    color: #15803d;
 }
 
 .statusExpired {
-    background: rgba(220, 38, 38, 0.1);
-    color: #dc2626;
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+    color: #b91c1c;
 }
 
 .copyLinkButton {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
     display: flex;
@@ -347,8 +367,10 @@
 }
 
 .copyLinkButton:hover {
-    background: #f1f5f9;
-    color: #0284c7;
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+    transform: scale(1.05);
 }
 
 /* Responsive */
@@ -358,16 +380,73 @@
     }
 
     .title {
-        font-size: 22px;
+        font-size: 24px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .formRow {
+        flex-direction: column;
+    }
+
+    .emailInput {
+        width: 100%;
+    }
+
+    .sendButton {
+        width: 100%;
+        height: 52px;
     }
 
     .invitationItem {
         flex-wrap: wrap;
+        padding: 16px;
+    }
+
+    .invitationInfo {
+        display: flex;
+        gap: 12px;
+        align-items: center;
     }
 
     .invitationActions {
         width: 100%;
-        margin-top: 12px;
-        justify-content: flex-end;
+        margin-top: 14px;
+        justify-content: space-between;
     }
+
+    .linkRow {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .copyButton {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Link button for copying invitation link */
+.linkButton {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.linkButton:hover {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+    transform: scale(1.05);
 }
