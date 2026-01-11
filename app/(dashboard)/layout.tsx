@@ -66,9 +66,90 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         router.push('/login');
     };
 
-    const handleSOS = () => {
-        // SOS functionality - can be expanded later
-        alert('SOS Alert! In a real scenario, this would notify supervisors immediately.');
+    const [sosLoading, setSosLoading] = useState(false);
+
+    const handleSOS = async () => {
+        // Confirm with user before sending
+        const confirmed = window.confirm(
+            '🚨 EMERGENCY ALERT\n\nThis will immediately send an SMS to your supervisor with your location.\n\nAre you sure you want to send an SOS alert?'
+        );
+
+        if (!confirmed) return;
+
+        setSosLoading(true);
+
+        try {
+            // Get GPS location
+            let latitude: number | null = null;
+            let longitude: number | null = null;
+
+            if (navigator.geolocation) {
+                try {
+                    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0,
+                        });
+                    });
+                    latitude = position.coords.latitude;
+                    longitude = position.coords.longitude;
+                } catch (gpsError) {
+                    console.warn('GPS not available:', gpsError);
+                    // Continue without GPS - still send the alert
+                }
+            }
+
+            // Call the SOS API
+            const response = await fetch('/api/emergency/sos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    latitude,
+                    longitude,
+                    coachName: profile?.full_name || 'Unknown Coach',
+                    coachEmail: profile?.email || 'Unknown Email',
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('✅ SOS Alert Sent!\n\nYour supervisor has been notified with your location. Help is on the way.');
+            } else {
+                throw new Error(data.error || 'Failed to send SOS');
+            }
+
+        } catch (error) {
+            console.error('SOS Error:', error);
+            
+            // Fallback to native SMS if API fails
+            const fallbackConfirmed = window.confirm(
+                '❌ Unable to send automatic alert.\n\nWould you like to open your phone\'s SMS app to send a manual emergency message?'
+            );
+
+            if (fallbackConfirmed) {
+                // Build SMS fallback
+                let smsBody = `EMERGENCY - ${profile?.full_name || 'Job Coach'} needs help!`;
+                
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            const mapLink = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                            smsBody += ` Location: ${mapLink}`;
+                            window.location.href = `sms:?body=${encodeURIComponent(smsBody)}`;
+                        },
+                        () => {
+                            window.location.href = `sms:?body=${encodeURIComponent(smsBody)}`;
+                        }
+                    );
+                } else {
+                    window.location.href = `sms:?body=${encodeURIComponent(smsBody)}`;
+                }
+            }
+        } finally {
+            setSosLoading(false);
+        }
     };
 
     if (loading) {
@@ -127,9 +208,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     {/* Right section with SOS and user info */}
                     <div className={styles.userSection}>
                         {/* SOS Button - Always Visible for all users */}
-                        <button onClick={handleSOS} className={styles.sosButton}>
+                        <button 
+                            onClick={handleSOS} 
+                            className={styles.sosButton}
+                            disabled={sosLoading}
+                            style={{ opacity: sosLoading ? 0.7 : 1 }}
+                        >
                             <AlertTriangle size={18} />
-                            <span>SOS</span>
+                            <span>{sosLoading ? 'Sending...' : 'SOS'}</span>
                         </button>
 
                         <div className={styles.userInfo}>
