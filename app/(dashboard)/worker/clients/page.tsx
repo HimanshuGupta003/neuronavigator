@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Users, Search, Plus, UserPlus, X, Building2, Hash } from 'lucide-react';
+import { Users, Search, Plus, UserPlus, X, Building2, Hash, Phone, Target, Calendar } from 'lucide-react';
 import styles from './clients.module.css';
 
 interface Client {
@@ -10,6 +10,10 @@ interface Client {
     full_name: string;
     uci_number: string | null;
     employer_worksite: string | null;
+    client_goals: string | null;
+    emergency_contact_name: string | null;
+    emergency_contact_phone: string | null;
+    program_start_date: string | null;
     coach_id: string;
     created_at: string;
 }
@@ -23,11 +27,15 @@ export default function ClientsPage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
 
-    // Form state
+    // Form state with new fields
     const [newClient, setNewClient] = useState({
         full_name: '',
         uci_number: '',
         employer_worksite: '',
+        client_goals: '',
+        emergency_contact_name: '',
+        emergency_contact_phone: '',
+        program_start_date: '',
     });
 
     useEffect(() => {
@@ -66,13 +74,25 @@ export default function ClientsPage() {
                     full_name: newClient.full_name,
                     uci_number: newClient.uci_number || null,
                     employer_worksite: newClient.employer_worksite || null,
+                    client_goals: newClient.client_goals || null,
+                    emergency_contact_name: newClient.emergency_contact_name || null,
+                    emergency_contact_phone: newClient.emergency_contact_phone || null,
+                    program_start_date: newClient.program_start_date || null,
                     coach_id: user.id,
                 });
 
             if (insertError) throw insertError;
 
             // Reset form and close modal
-            setNewClient({ full_name: '', uci_number: '', employer_worksite: '' });
+            setNewClient({ 
+                full_name: '', 
+                uci_number: '', 
+                employer_worksite: '',
+                client_goals: '',
+                emergency_contact_name: '',
+                emergency_contact_phone: '',
+                program_start_date: '',
+            });
             setShowAddModal(false);
             loadClients();
         } catch (err) {
@@ -171,50 +191,119 @@ export default function ClientsPage() {
                 )}
             </div>
 
-            {/* Add Client Modal */}
+            {/* Client Intake Form Modal */}
             {showAddModal && (
                 <div className={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
                     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2 className={styles.modalTitle}>Add New Client</h2>
+                            <h2 className={styles.modalTitle}>Client Intake Form</h2>
                             <button onClick={() => setShowAddModal(false)} className={styles.closeButton}>
                                 <X size={20} />
                             </button>
                         </div>
 
                         <form onSubmit={handleAddClient} className={styles.form}>
-                            <div className={styles.inputGroup}>
-                                <label className={styles.inputLabel}>Full Name *</label>
-                                <input
-                                    type="text"
-                                    value={newClient.full_name}
-                                    onChange={(e) => setNewClient({ ...newClient, full_name: e.target.value })}
-                                    required
-                                    placeholder="Enter client's full name"
-                                    className={styles.input}
-                                />
+                            {/* Basic Info Section */}
+                            <div className={styles.formSection}>
+                                <h3 className={styles.sectionTitle}>Basic Information</h3>
+                                
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.inputLabel}>Full Name *</label>
+                                    <input
+                                        type="text"
+                                        value={newClient.full_name}
+                                        onChange={(e) => setNewClient({ ...newClient, full_name: e.target.value })}
+                                        required
+                                        placeholder="Enter client's full name"
+                                        className={styles.input}
+                                    />
+                                </div>
+
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.inputLabel}>UCI # (Government ID)</label>
+                                    <input
+                                        type="text"
+                                        value={newClient.uci_number}
+                                        onChange={(e) => setNewClient({ ...newClient, uci_number: e.target.value })}
+                                        placeholder="Enter UCI number"
+                                        className={styles.input}
+                                    />
+                                </div>
+
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.inputLabel}>Employer / Worksite</label>
+                                    <input
+                                        type="text"
+                                        value={newClient.employer_worksite}
+                                        onChange={(e) => setNewClient({ ...newClient, employer_worksite: e.target.value })}
+                                        placeholder="Enter employer or worksite"
+                                        className={styles.input}
+                                    />
+                                </div>
+
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.inputLabel}>
+                                        <Calendar size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                                        Program Start Date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={newClient.program_start_date}
+                                        onChange={(e) => setNewClient({ ...newClient, program_start_date: e.target.value })}
+                                        className={styles.input}
+                                    />
+                                </div>
                             </div>
 
-                            <div className={styles.inputGroup}>
-                                <label className={styles.inputLabel}>UCI # (Government ID)</label>
-                                <input
-                                    type="text"
-                                    value={newClient.uci_number}
-                                    onChange={(e) => setNewClient({ ...newClient, uci_number: e.target.value })}
-                                    placeholder="Enter UCI number"
-                                    className={styles.input}
-                                />
+                            {/* Goals Section */}
+                            <div className={styles.formSection}>
+                                <h3 className={styles.sectionTitle}>
+                                    <Target size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                                    Client Goals
+                                </h3>
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.inputLabel}>
+                                        What are the client's goals? (Used for AI report generation)
+                                    </label>
+                                    <textarea
+                                        value={newClient.client_goals}
+                                        onChange={(e) => setNewClient({ ...newClient, client_goals: e.target.value })}
+                                        placeholder="E.g., Improve work speed, develop social skills, learn job tasks..."
+                                        className={styles.textarea}
+                                        rows={4}
+                                    />
+                                </div>
                             </div>
 
-                            <div className={styles.inputGroup}>
-                                <label className={styles.inputLabel}>Employer / Worksite</label>
-                                <input
-                                    type="text"
-                                    value={newClient.employer_worksite}
-                                    onChange={(e) => setNewClient({ ...newClient, employer_worksite: e.target.value })}
-                                    placeholder="Enter employer or worksite"
-                                    className={styles.input}
-                                />
+                            {/* Emergency Contact Section */}
+                            <div className={styles.formSection}>
+                                <h3 className={styles.sectionTitle}>
+                                    <Phone size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                                    Emergency Contact
+                                </h3>
+                                
+                                <div className={styles.inputRow}>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Contact Name</label>
+                                        <input
+                                            type="text"
+                                            value={newClient.emergency_contact_name}
+                                            onChange={(e) => setNewClient({ ...newClient, emergency_contact_name: e.target.value })}
+                                            placeholder="Name"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            value={newClient.emergency_contact_phone}
+                                            onChange={(e) => setNewClient({ ...newClient, emergency_contact_phone: e.target.value })}
+                                            placeholder="Phone"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             {error && (

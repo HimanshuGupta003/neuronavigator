@@ -126,13 +126,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                     {/* Right section with SOS and user info */}
                     <div className={styles.userSection}>
-                        {/* SOS Button - Always Visible */}
-                        {!isAdmin && (
-                            <button onClick={handleSOS} className={styles.sosButton}>
-                                <AlertTriangle size={18} />
-                                <span>SOS</span>
-                            </button>
-                        )}
+                        {/* SOS Button - Always Visible for all users */}
+                        <button onClick={handleSOS} className={styles.sosButton}>
+                            <AlertTriangle size={18} />
+                            <span>SOS</span>
+                        </button>
 
                         <div className={styles.userInfo}>
                             <div className={styles.userAvatar}>
