@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Brain, LogOut, Users, FileText, Home, Mic, ClipboardList, Bell, Sparkles, AlertTriangle } from 'lucide-react';
+import Modal from '@/components/ui/Modal';
 import { Profile } from '@/lib/types';
 import styles from './dashboard.module.css';
 
@@ -67,15 +68,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     };
 
     const [sosLoading, setSosLoading] = useState(false);
+    const [showSOSModal, setShowSOSModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    const handleSOS = async () => {
-        // Confirm with user before sending
-        const confirmed = window.confirm(
-            '🚨 EMERGENCY ALERT\n\nThis will immediately send an SMS to your supervisor with your location.\n\nAre you sure you want to send an SOS alert?'
-        );
+    const handleSOSClick = () => {
+        setShowSOSModal(true);
+    };
 
-        if (!confirmed) return;
-
+    const handleSOSConfirm = async () => {
         setSosLoading(true);
 
         try {
@@ -115,7 +115,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             const data = await response.json();
 
             if (data.success) {
-                alert('✅ SOS Alert Sent!\n\nYour supervisor has been notified with your location. Help is on the way.');
+                setShowSOSModal(false);
+                setShowSuccessModal(true);
             } else {
                 throw new Error(data.error || 'Failed to send SOS');
             }
@@ -149,6 +150,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             }
         } finally {
             setSosLoading(false);
+            setShowSOSModal(false);
         }
     };
 
@@ -209,7 +211,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <div className={styles.userSection}>
                         {/* SOS Button - Always Visible for all users */}
                         <button 
-                            onClick={handleSOS} 
+                            onClick={handleSOSClick} 
                             className={styles.sosButton}
                             disabled={sosLoading}
                             style={{ opacity: sosLoading ? 0.7 : 1 }}
@@ -287,6 +289,34 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     }
                 }
             `}</style>
+
+            {/* SOS Confirmation Modal */}
+            <Modal
+                isOpen={showSOSModal}
+                onClose={() => setShowSOSModal(false)}
+                onConfirm={handleSOSConfirm}
+                title="Emergency Alert"
+                subtitle="SOS Panic Button"
+                message="This will immediately send an SMS to your supervisor with your current GPS location."
+                warningText="Only use this in a real emergency situation."
+                confirmText="Send SOS Alert"
+                cancelText="Cancel"
+                variant="sos"
+                loading={sosLoading}
+            />
+
+            {/* Success Modal */}
+            <Modal
+                isOpen={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                onConfirm={() => setShowSuccessModal(false)}
+                title="Alert Sent Successfully"
+                subtitle="Help is on the way"
+                message="Your supervisor has been notified with your location. Stay calm and wait for assistance."
+                confirmText="OK"
+                cancelText=""
+                variant="success"
+            />
         </div>
     );
 }
