@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useRef } from 'react';
 import { AlertTriangle, Shield, Check, Loader2 } from 'lucide-react';
 import styles from './sos.module.css';
 
@@ -15,20 +15,39 @@ export default function ClientSOSPage({ params }: PageProps) {
     const [status, setStatus] = useState<Status>('loading');
     const [clientName, setClientName] = useState<string>('');
     const [error, setError] = useState<string>('');
+    
+    // Pre-fetch GPS location on page load for faster SOS
+    const locationRef = useRef<{ latitude?: number; longitude?: number }>({});
 
     useEffect(() => {
         verifyToken();
+        prefetchLocation();
     }, [token]);
+
+    const prefetchLocation = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    locationRef.current = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                    };
+                },
+                () => {
+                    // GPS denied or failed - will try again during SOS
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
+        }
+    };
 
     const verifyToken = async () => {
         try {
             // Save token to localStorage for PWA home screen launch
             localStorage.setItem('sos_token', token);
             
-            // Simple verification by attempting to get client info
-            // In production, you might want a dedicated verify endpoint
             setStatus('idle');
-            setClientName(''); // Will be set on successful SOS
+            setClientName('');
         } catch {
             setStatus('invalid');
         }
@@ -42,24 +61,24 @@ export default function ClientSOSPage({ params }: PageProps) {
         setStatus('sending');
 
         try {
-            // Get GPS location with longer timeout for first-time permission
-            let latitude: number | undefined;
-            let longitude: number | undefined;
+            // Use pre-fetched GPS or try quick fetch
+            let latitude = locationRef.current.latitude;
+            let longitude = locationRef.current.longitude;
 
-            if (navigator.geolocation) {
+            // If no pre-fetched location, try quick fetch (2 second timeout)
+            if (!latitude && navigator.geolocation) {
                 try {
                     const position = await new Promise<GeolocationPosition>((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 15000, // 15 seconds for permission dialog
-                            maximumAge: 60000, // Accept cached location up to 1 minute old
+                            enableHighAccuracy: false, // Faster, less accurate
+                            timeout: 2000, // Only 2 seconds
+                            maximumAge: 120000, // Accept cached up to 2 min
                         });
                     });
                     latitude = position.coords.latitude;
                     longitude = position.coords.longitude;
-                } catch (gpsError) {
-                    console.warn('GPS error:', gpsError);
-                    // Continue without location - don't block the SOS
+                } catch {
+                    // Continue without location
                 }
             }
 
