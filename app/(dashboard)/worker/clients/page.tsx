@@ -19,6 +19,14 @@ interface Client {
     dor_counselor_phone: string | null;
     hourly_wage: number | null;
     vendor: string | null;
+    // New DR384 fields
+    birthdate: string | null;
+    dor_district: string | null;
+    job_title: string | null;
+    placement_type: string | null;
+    work_schedule: string | null;
+    hours_authorized: number | null;
+    se_service_provider: string | null;
     coach_id: string;
     created_at: string;
 }
@@ -38,7 +46,7 @@ export default function ClientsPage() {
     const [copied, setCopied] = useState(false);
     const [revoking, setRevoking] = useState(false);
 
-    // Form state with new fields
+    // Form state with all DR384 fields
     const [newClient, setNewClient] = useState({
         full_name: '',
         uci_number: '',
@@ -51,6 +59,14 @@ export default function ClientsPage() {
         dor_counselor_phone: '',
         hourly_wage: '',
         vendor: 'v-Enable Pathways',
+        // New DR384 fields
+        birthdate: '',
+        dor_district: '',
+        job_title: '',
+        placement_type: 'Individual',
+        work_schedule: '',
+        hours_authorized: '',
+        se_service_provider: '',
     });
 
     useEffect(() => {
@@ -97,6 +113,14 @@ export default function ClientsPage() {
                     dor_counselor_phone: newClient.dor_counselor_phone || null,
                     hourly_wage: newClient.hourly_wage ? parseFloat(newClient.hourly_wage) : null,
                     vendor: newClient.vendor || 'v-Enable Pathways',
+                    // New DR384 fields
+                    birthdate: newClient.birthdate || null,
+                    dor_district: newClient.dor_district || null,
+                    job_title: newClient.job_title || null,
+                    placement_type: newClient.placement_type || 'Individual',
+                    work_schedule: newClient.work_schedule || null,
+                    hours_authorized: newClient.hours_authorized ? parseFloat(newClient.hours_authorized) : null,
+                    se_service_provider: newClient.se_service_provider || null,
                     coach_id: user.id,
                 });
 
@@ -115,6 +139,13 @@ export default function ClientsPage() {
                 dor_counselor_phone: '',
                 hourly_wage: '',
                 vendor: 'v-Enable Pathways',
+                birthdate: '',
+                dor_district: '',
+                job_title: '',
+                placement_type: 'Individual',
+                work_schedule: '',
+                hours_authorized: '',
+                se_service_provider: '',
             });
             setShowAddModal(false);
             loadClients();
@@ -428,6 +459,90 @@ export default function ClientsPage() {
                                 </div>
                             </div>
 
+                            {/* Job Details Section */}
+                            <div className={styles.formSection}>
+                                <h3 className={styles.sectionTitle}>
+                                    <Building2 size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                                    Job Details
+                                </h3>
+                                
+                                <div className={styles.inputRow}>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Job Title</label>
+                                        <input
+                                            type="text"
+                                            value={newClient.job_title}
+                                            onChange={(e) => setNewClient({ ...newClient, job_title: e.target.value })}
+                                            placeholder="e.g., Stock Clerk, Cashier"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Birthdate</label>
+                                        <input
+                                            type="date"
+                                            value={newClient.birthdate}
+                                            onChange={(e) => setNewClient({ ...newClient, birthdate: e.target.value })}
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className={styles.inputRow}>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Placement Type</label>
+                                        <select
+                                            value={newClient.placement_type}
+                                            onChange={(e) => setNewClient({ ...newClient, placement_type: e.target.value })}
+                                            className={styles.input}
+                                        >
+                                            <option value="Individual">Individual Placement (IP)</option>
+                                            <option value="Group">Group Placement (GP)</option>
+                                        </select>
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Work Schedule</label>
+                                        <input
+                                            type="text"
+                                            value={newClient.work_schedule}
+                                            onChange={(e) => setNewClient({ ...newClient, work_schedule: e.target.value })}
+                                            placeholder="e.g., Mon-Fri 9am-2pm"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* DOR Information Section */}
+                            <div className={styles.formSection}>
+                                <h3 className={styles.sectionTitle}>
+                                    DOR Information
+                                </h3>
+                                
+                                <div className={styles.inputRow}>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>DOR District</label>
+                                        <input
+                                            type="text"
+                                            value={newClient.dor_district}
+                                            onChange={(e) => setNewClient({ ...newClient, dor_district: e.target.value })}
+                                            placeholder="e.g., Oakland, San Francisco"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>SE Service Provider</label>
+                                        <input
+                                            type="text"
+                                            value={newClient.se_service_provider}
+                                            onChange={(e) => setNewClient({ ...newClient, se_service_provider: e.target.value })}
+                                            placeholder="Supported Employment Provider"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Billing Information Section */}
                             <div className={styles.formSection}>
                                 <h3 className={styles.sectionTitle}>
@@ -456,6 +571,18 @@ export default function ClientsPage() {
                                             className={styles.input}
                                         />
                                     </div>
+                                </div>
+
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.inputLabel}>Total Hours Authorized (Monthly)</label>
+                                    <input
+                                        type="number"
+                                        step="0.5"
+                                        value={newClient.hours_authorized}
+                                        onChange={(e) => setNewClient({ ...newClient, hours_authorized: e.target.value })}
+                                        placeholder="e.g., 40"
+                                        className={styles.input}
+                                    />
                                 </div>
                             </div>
 
