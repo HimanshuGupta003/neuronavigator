@@ -291,18 +291,28 @@
 .invalidCard {
     background: white;
     border-radius: 28px;
-    padding: 44px 32px;
+    padding: 48px 32px 40px;
     text-align: center;
     max-width: 360px;
     width: 100%;
     box-shadow: 0 25px 80px rgba(0, 0, 0, 0.18);
 }
 
+.invalidIconWrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+}
+
 .invalidIcon {
     color: #94a3b8;
-    margin-bottom: 20px;
-    width: 64px;
-    height: 64px;
+    width: 40px;
+    height: 40px;
 }
 
 .invalidTitle {

@@ -129,7 +129,9 @@ export default function ClientSOSPage({ params }: PageProps) {
         return (
             <div className={styles.container}>
                 <div className={styles.invalidCard}>
-                    <Shield size={64} className={styles.invalidIcon} />
+                    <div className={styles.invalidIconWrapper}>
+                        <Shield size={40} className={styles.invalidIcon} />
+                    </div>
                     <h1 className={styles.invalidTitle}>Link Not Valid</h1>
                     <p className={styles.invalidText}>
                         This safety link is no longer active. Please contact your Job Coach for a new link.
