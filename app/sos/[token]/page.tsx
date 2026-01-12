@@ -42,7 +42,7 @@ export default function ClientSOSPage({ params }: PageProps) {
         setStatus('sending');
 
         try {
-            // Get GPS location
+            // Get GPS location with longer timeout for first-time permission
             let latitude: number | undefined;
             let longitude: number | undefined;
 
@@ -51,13 +51,15 @@ export default function ClientSOSPage({ params }: PageProps) {
                     const position = await new Promise<GeolocationPosition>((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, {
                             enableHighAccuracy: true,
-                            timeout: 5000,
+                            timeout: 15000, // 15 seconds for permission dialog
+                            maximumAge: 60000, // Accept cached location up to 1 minute old
                         });
                     });
                     latitude = position.coords.latitude;
                     longitude = position.coords.longitude;
-                } catch {
-                    console.warn('GPS not available');
+                } catch (gpsError) {
+                    console.warn('GPS error:', gpsError);
+                    // Continue without location - don't block the SOS
                 }
             }
 
