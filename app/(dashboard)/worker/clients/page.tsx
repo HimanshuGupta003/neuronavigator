@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Users, Search, Plus, UserPlus, X, Building2, Hash, Phone, Target, Calendar } from 'lucide-react';
+import { Users, Search, Plus, UserPlus, X, Building2, Hash, Phone, Target, Calendar, Shield, Copy, Check, Link2 } from 'lucide-react';
 import styles from './clients.module.css';
 
 interface Client {
@@ -26,6 +26,11 @@ export default function ClientsPage() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+
+    // Safety Link state
+    const [safetyLinkModal, setSafetyLinkModal] = useState<{show: boolean; link: string; clientName: string}>({show: false, link: '', clientName: ''});
+    const [generatingLink, setGeneratingLink] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
 
     // Form state with new fields
     const [newClient, setNewClient] = useState({
@@ -108,6 +113,33 @@ export default function ClientsPage() {
         c.employer_worksite?.toLowerCase().includes(search.toLowerCase())
     );
 
+    const handleGenerateSafetyLink = async (clientId: string, clientName: string) => {
+        setGeneratingLink(clientId);
+        try {
+            const response = await fetch('/api/safety-link/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clientId }),
+            });
+            const data = await response.json();
+            if (data.success) {
+                setSafetyLinkModal({ show: true, link: data.link, clientName });
+            } else {
+                setError(data.error || 'Failed to generate link');
+            }
+        } catch (err) {
+            setError('Failed to generate safety link');
+        } finally {
+            setGeneratingLink(null);
+        }
+    };
+
+    const handleCopyLink = async () => {
+        await navigator.clipboard.writeText(safetyLinkModal.link);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     return (
         <div className={styles.container}>
             {/* Header */}
@@ -185,6 +217,23 @@ export default function ClientsPage() {
                                         )}
                                     </div>
                                 </div>
+                                <button
+                                    className={styles.safetyLinkButton}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleGenerateSafetyLink(client.id, client.full_name);
+                                    }}
+                                    disabled={generatingLink === client.id}
+                                >
+                                    {generatingLink === client.id ? (
+                                        <div className={styles.smallSpinner}></div>
+                                    ) : (
+                                        <>
+                                            <Shield size={16} />
+                                            <span>Safety Link</span>
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         ))}
                     </div>
@@ -321,6 +370,51 @@ export default function ClientsPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Safety Link Modal */}
+            {safetyLinkModal.show && (
+                <div className={styles.modalOverlay} onClick={() => setSafetyLinkModal({show: false, link: '', clientName: ''})}>
+                    <div className={styles.safetyModal} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.safetyModalHeader}>
+                            <Shield size={28} className={styles.safetyModalIcon} />
+                            <h2 className={styles.safetyModalTitle}>Safety Link Ready</h2>
+                        </div>
+                        <p className={styles.safetyModalSubtitle}>
+                            Share this link with <strong>{safetyLinkModal.clientName}</strong> to give them access to the SOS button.
+                        </p>
+                        
+                        <div className={styles.linkBox}>
+                            <input 
+                                type="text" 
+                                value={safetyLinkModal.link} 
+                                readOnly 
+                                className={styles.linkInput}
+                            />
+                            <button onClick={handleCopyLink} className={styles.copyButton}>
+                                {copied ? <Check size={18} /> : <Copy size={18} />}
+                                {copied ? 'Copied!' : 'Copy'}
+                            </button>
+                        </div>
+
+                        <div className={styles.safetyInstructions}>
+                            <p className={styles.instructionTitle}>Instructions:</p>
+                            <ol className={styles.instructionList}>
+                                <li>Send this link to the client via SMS or WhatsApp</li>
+                                <li>Have them open it in Safari/Chrome</li>
+                                <li>Tap "Add to Home Screen"</li>
+                                <li>The SOS button will appear as an app icon</li>
+                            </ol>
+                        </div>
+
+                        <button 
+                            className={styles.safetyCloseButton}
+                            onClick={() => setSafetyLinkModal({show: false, link: '', clientName: ''})}
+                        >
+                            Done
+                        </button>
                     </div>
                 </div>
             )}

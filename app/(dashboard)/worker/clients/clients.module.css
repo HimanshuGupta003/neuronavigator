@@ -598,3 +598,171 @@
         width: 100%;
     }
 }
+
+/* Safety Link Button on Client Card */
+.safetyLinkButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.safetyLinkButton:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.safetyLinkButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.smallSpinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Safety Link Modal */
+.safetyModal {
+    background: white;
+    border-radius: 24px;
+    padding: 32px;
+    width: 100%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.2);
+}
+
+.safetyModalHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.safetyModalIcon {
+    color: #16a34a;
+}
+
+.safetyModalTitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.safetyModalSubtitle {
+    font-size: 15px;
+    color: #64748b;
+    margin: 0 0 24px 0;
+    line-height: 1.5;
+}
+
+.linkBox {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.linkInput {
+    flex: 1;
+    padding: 12px 16px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 13px;
+    color: #475569;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.copyButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    background: #1e293b;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.copyButton:hover {
+    background: #334155;
+}
+
+.safetyInstructions {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.instructionTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #166534;
+    margin: 0 0 10px 0;
+}
+
+.instructionList {
+    font-size: 13px;
+    color: #166534;
+    margin: 0;
+    padding-left: 18px;
+    line-height: 1.8;
+}
+
+.safetyCloseButton {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.safetyCloseButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.3);
+}
+
+/* Mobile Safety Modal */
+@media (max-width: 480px) {
+    .safetyModal {
+        border-radius: 24px 24px 0 0;
+        max-height: 85vh;
+    }
+
+    .linkBox {
+        flex-direction: column;
+    }
+
+    .copyButton {
+        justify-content: center;
+    }
+}
