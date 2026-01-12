@@ -85,20 +85,21 @@ export default function ClientSOSPage({ params }: PageProps) {
             // Check if we need to use native SMS fallback
             if (data.useFallback && data.fallbackPhones && data.fallbackPhones.length > 0) {
                 // Build SMS body
-                let smsBody = data.fallbackMessage || `🚨 SOS EMERGENCY - ${data.clientName} needs help!`;
+                const smsBody = data.fallbackMessage || `🚨 SOS EMERGENCY - ${data.clientName} needs help!`;
                 
-                // For multiple recipients, most phones only support one number in sms: protocol
-                // Join first phone number for the sms: link
+                // Use first phone number
                 const phone = data.fallbackPhones[0];
                 
-                // Open native SMS app with pre-filled message
+                // Open native SMS app directly - use window.open for immediate action
                 const smsUrl = `sms:${phone}?body=${encodeURIComponent(smsBody)}`;
-                window.location.href = smsUrl;
                 
-                // Show success after a brief delay
+                // Show success state first, then open SMS
+                setStatus('sent');
+                
+                // Small delay then open SMS app
                 setTimeout(() => {
-                    setStatus('sent');
-                }, 500);
+                    window.open(smsUrl, '_self');
+                }, 100);
             } else {
                 setStatus('sent');
             }
