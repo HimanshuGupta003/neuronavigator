@@ -54,9 +54,11 @@ export async function POST(request: NextRequest) {
             .single();
 
         // Build location link
+        let locationUrl = '';
         let locationText = 'Location not available';
         if (latitude && longitude) {
-            locationText = `https://maps.google.com/maps?q=${latitude},${longitude}`;
+            locationUrl = `https://maps.google.com/maps?q=${latitude},${longitude}`;
+            locationText = locationUrl;
         }
 
         // Build emergency message
@@ -86,25 +88,36 @@ This alert was triggered via the client's safety app. Please respond immediately
             phoneNumbers.push(client.emergency_contact_phone);
         }
 
-        // Send SMS via Twilio
+        let twilioSuccess = false;
+        let twilioError = null;
+
+        // Try to send SMS via Twilio
         if (phoneNumbers.length > 0 && process.env.TWILIO_ACCOUNT_SID) {
-            const twilioClient = twilio(
-                process.env.TWILIO_ACCOUNT_SID,
-                process.env.TWILIO_AUTH_TOKEN
-            );
+            try {
+                const twilioClient = twilio(
+                    process.env.TWILIO_ACCOUNT_SID,
+                    process.env.TWILIO_AUTH_TOKEN
+                );
 
-            const sendPromises = phoneNumbers.map(phone =>
-                twilioClient.messages.create({
-                    body: message,
-                    from: process.env.TWILIO_PHONE_NUMBER,
-                    to: phone,
-                }).catch(err => {
-                    console.error(`Failed to send to ${phone}:`, err);
-                    return null;
-                })
-            );
+                const sendPromises = phoneNumbers.map(phone =>
+                    twilioClient.messages.create({
+                        body: message,
+                        from: process.env.TWILIO_PHONE_NUMBER,
+                        to: phone,
+                    })
+                );
 
-            await Promise.all(sendPromises);
+                const results = await Promise.all(sendPromises);
+                
+                // Check if all messages were sent successfully
+                const allSuccess = results.every(r => r && r.sid);
+                if (allSuccess) {
+                    twilioSuccess = true;
+                }
+            } catch (err) {
+                console.error('Twilio error:', err);
+                twilioError = err;
+            }
         }
 
         // Log the emergency
@@ -113,11 +126,25 @@ This alert was triggered via the client's safety app. Please respond immediately
             latitude: latitude || null,
             longitude: longitude || null,
             message_sent: message,
-            twilio_message_sid: 'client_sos_trigger',
+            twilio_message_sid: twilioSuccess ? 'twilio_success' : 'fallback_triggered',
         });
+
+        // If Twilio failed or no Twilio configured, return fallback data
+        if (!twilioSuccess) {
+            console.log('Twilio failed or not configured, returning fallback data');
+            return NextResponse.json({
+                success: true,
+                useFallback: true,
+                clientName: client.full_name,
+                fallbackMessage: message,
+                fallbackPhones: phoneNumbers,
+                locationUrl: locationUrl,
+            });
+        }
 
         return NextResponse.json({
             success: true,
+            useFallback: false,
             message: 'Emergency alert sent successfully',
             clientName: client.full_name,
         });
@@ -130,3 +157,4 @@ This alert was triggered via the client's safety app. Please respond immediately
         );
     }
 }
+

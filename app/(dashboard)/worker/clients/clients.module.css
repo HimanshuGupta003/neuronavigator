@@ -672,6 +672,24 @@
     line-height: 1.5;
 }
 
+.qrCodeSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 2px dashed #e2e8f0;
+}
+
+.qrCodeHint {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0;
+}
+
 .linkBox {
     display: flex;
     gap: 8px;

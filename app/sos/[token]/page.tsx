@@ -79,7 +79,27 @@ export default function ClientSOSPage({ params }: PageProps) {
             }
 
             setClientName(data.clientName || '');
-            setStatus('sent');
+
+            // Check if we need to use native SMS fallback
+            if (data.useFallback && data.fallbackPhones && data.fallbackPhones.length > 0) {
+                // Build SMS body
+                let smsBody = data.fallbackMessage || `🚨 SOS EMERGENCY - ${data.clientName} needs help!`;
+                
+                // For multiple recipients, most phones only support one number in sms: protocol
+                // Join first phone number for the sms: link
+                const phone = data.fallbackPhones[0];
+                
+                // Open native SMS app with pre-filled message
+                const smsUrl = `sms:${phone}?body=${encodeURIComponent(smsBody)}`;
+                window.location.href = smsUrl;
+                
+                // Show success after a brief delay
+                setTimeout(() => {
+                    setStatus('sent');
+                }, 500);
+            } else {
+                setStatus('sent');
+            }
 
         } catch (err) {
             console.error('SOS error:', err);

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Users, Search, Plus, UserPlus, X, Building2, Hash, Phone, Target, Calendar, Shield, Copy, Check, Link2 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import styles from './clients.module.css';
 
 interface Client {
@@ -410,6 +411,18 @@ export default function ClientsPage() {
                         <p className={styles.safetyModalSubtitle}>
                             Share this link with <strong>{safetyLinkModal.clientName}</strong> to give them access to the SOS button.
                         </p>
+
+                        {/* QR Code */}
+                        <div className={styles.qrCodeSection}>
+                            <QRCodeSVG 
+                                value={safetyLinkModal.link}
+                                size={160}
+                                level="M"
+                                bgColor="#ffffff"
+                                fgColor="#1e293b"
+                            />
+                            <p className={styles.qrCodeHint}>Scan with phone camera</p>
+                        </div>
                         
                         <div className={styles.linkBox}>
                             <input 
