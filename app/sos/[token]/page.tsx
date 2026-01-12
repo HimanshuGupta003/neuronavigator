@@ -61,24 +61,28 @@ export default function ClientSOSPage({ params }: PageProps) {
         setStatus('sending');
 
         try {
-            // Use pre-fetched GPS or try quick fetch
-            let latitude = locationRef.current.latitude;
-            let longitude = locationRef.current.longitude;
+            // Always try to get FRESH location first (most current)
+            let latitude: number | undefined;
+            let longitude: number | undefined;
 
-            // If no pre-fetched location, try quick fetch (2 second timeout)
-            if (!latitude && navigator.geolocation) {
+            if (navigator.geolocation) {
                 try {
                     const position = await new Promise<GeolocationPosition>((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: false, // Faster, less accurate
-                            timeout: 2000, // Only 2 seconds
-                            maximumAge: 120000, // Accept cached up to 2 min
+                            enableHighAccuracy: true,
+                            timeout: 5000, // 5 second timeout for fresh location
+                            maximumAge: 0, // Force fresh location, no cache
                         });
                     });
                     latitude = position.coords.latitude;
                     longitude = position.coords.longitude;
                 } catch {
-                    // Continue without location
+                    // Fresh fetch failed - use cached location as fallback
+                    if (locationRef.current.latitude) {
+                        latitude = locationRef.current.latitude;
+                        longitude = locationRef.current.longitude;
+                    }
+                    // If no cached either, continue without location
                 }
             }
 
