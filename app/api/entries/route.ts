@@ -9,6 +9,7 @@ interface CreateEntryRequest {
     formattedNote: string;
     summary: string;
     tags: string[];
+    consumerHours?: number | null;
     latitude?: number;
     longitude?: number;
 }
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest) {
             formattedNote, 
             summary, 
             tags,
+            consumerHours,
             latitude,
             longitude 
         } = body;
@@ -58,6 +60,7 @@ export async function POST(request: NextRequest) {
                 raw_transcript: rawTranscript,
                 processed_text: formattedNote,
                 tags: tags,
+                consumer_hours: consumerHours || null,
                 gps_lat: latitude || null,
                 gps_lng: longitude || null,
                 client_name: body.clientName || null,
