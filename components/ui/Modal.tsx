@@ -83,13 +83,15 @@ export default function Modal({
 
                 {/* Footer */}
                 <div className={styles.footer}>
-                    <button 
-                        className={`${styles.button} ${styles.buttonCancel}`}
-                        onClick={onClose}
-                        disabled={loading}
-                    >
-                        {cancelText}
-                    </button>
+                    {variant !== 'success' && (
+                        <button 
+                            className={`${styles.button} ${styles.buttonCancel}`}
+                            onClick={onClose}
+                            disabled={loading}
+                        >
+                            {cancelText}
+                        </button>
+                    )}
                     <button 
                         className={confirmButtonClass}
                         onClick={onConfirm}
