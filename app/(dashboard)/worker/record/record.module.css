@@ -313,3 +313,348 @@
         height: 40px;
     }
 }
+
+/* Processing States */
+.processingContainer {
+    padding: 48px 0;
+    text-align: center;
+}
+
+.spinner {
+    color: #0284c7;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.processingText {
+    font-size: 16px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* Success State */
+.successContainer {
+    padding: 48px 0;
+    text-align: center;
+}
+
+.successIcon {
+    color: #16a34a;
+    margin-bottom: 16px;
+}
+
+.successText {
+    font-size: 18px;
+    font-weight: 600;
+    color: #16a34a;
+}
+
+/* Recording Time */
+.recordingTime {
+    font-size: 32px;
+    font-weight: 700;
+    color: #dc2626;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Error Box */
+.errorBox {
+    padding: 14px 18px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    color: #dc2626;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Transcript Header */
+.transcriptHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+/* Summary Text */
+.summaryText {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0284c7;
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    background: rgba(2, 132, 199, 0.08);
+    border-radius: 10px;
+}
+
+/* Edit Button */
+.editButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.editButton:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+/* Transcript Textarea */
+.transcriptTextarea {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #334155;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    outline: none;
+    resize: vertical;
+    line-height: 1.7;
+    margin-bottom: 16px;
+}
+
+.transcriptTextarea:focus {
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+}
+
+/* Tags Container */
+.tagsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.tag {
+    padding: 6px 12px;
+    background: rgba(2, 132, 199, 0.1);
+    color: #0284c7;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Action Buttons */
+.actionButtons {
+    display: flex;
+    gap: 12px;
+}
+
+.cancelButton {
+    flex: 1;
+    height: 52px;
+    min-height: 48px;
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+    background: #e2e8f0;
+}
+
+.submitButton {
+    flex: 2;
+}
+
+/* Mobile Action Buttons */
+@media (max-width: 480px) {
+    .actionButtons {
+        flex-direction: column-reverse;
+    }
+
+    .cancelButton,
+    .submitButton {
+        width: 100%;
+    }
+}
+
+/* Recording Hint */
+.recordingHint {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 8px;
+}
+
+/* Playback Section */
+.playbackSection {
+    text-align: center;
+    padding: 32px 0;
+}
+
+.playbackTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+}
+
+.playbackDuration {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 24px;
+}
+
+.playbackControls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.playButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 140px;
+    height: 56px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: white;
+    border: none;
+    border-radius: 28px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+    transition: all 0.2s ease;
+}
+
+.playButton:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+}
+
+.playbackActions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.reRecordButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reRecordButton:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.transcribeButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+    transition: all 0.2s ease;
+}
+
+.transcribeButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+}
+
+/* Mobile Playback Actions */
+@media (max-width: 480px) {
+    .playbackActions {
+        flex-direction: column;
+    }
+
+    .reRecordButton,
+    .transcribeButton {
+        width: 100%;
+    }
+}
+
+/* Consumer Hours Section */
+.hoursSection {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+}
+
+.hoursLabel {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 10px;
+}
+
+.hoursHint {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.hoursInput {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.hoursInput:focus {
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+}
+
+.hoursInput::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}

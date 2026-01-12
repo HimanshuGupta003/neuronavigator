@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Mic, MicOff, Sparkles, Check, User } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Mic, MicOff, Sparkles, Check, User, Loader2, Edit3, Play, Pause, RotateCcw, Send } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import styles from './record.module.css';
 
@@ -10,19 +10,53 @@ type MoodType = 'good' | 'neutral' | 'bad' | null;
 interface Client {
     id: string;
     full_name: string;
+    client_goals: string | null;
 }
+
+type ProcessingStep = 'idle' | 'recording' | 'recorded' | 'transcribing' | 'formatting' | 'ready' | 'saving' | 'saved';
+
+const MIN_RECORDING_TIME = 3; // 3 seconds minimum
+const MAX_RECORDING_TIME = 300; // 5 minutes maximum
 
 export default function RecordNotePage() {
     const supabase = createClient();
     const [selectedMood, setSelectedMood] = useState<MoodType>(null);
     const [selectedClient, setSelectedClient] = useState<string>('');
     const [clients, setClients] = useState<Client[]>([]);
-    const [isRecording, setIsRecording] = useState(false);
-    const [transcript, setTranscript] = useState('');
     const [loading, setLoading] = useState(true);
+    
+    // Recording state
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingTime, setRecordingTime] = useState(0);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    
+    // Audio playback state
+    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+    const [audioUrl, setAudioUrl] = useState<string | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    
+    // Processing state
+    const [processingStep, setProcessingStep] = useState<ProcessingStep>('idle');
+    const [rawTranscript, setRawTranscript] = useState('');
+    const [formattedNote, setFormattedNote] = useState('');
+    const [summary, setSummary] = useState('');
+    const [tags, setTags] = useState<string[]>([]);
+    const [error, setError] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [consumerHours, setConsumerHours] = useState<string>('');
 
     useEffect(() => {
         loadClients();
+        
+        // Cleanup audio URL on unmount
+        return () => {
+            if (audioUrl) {
+                URL.revokeObjectURL(audioUrl);
+            }
+        };
     }, []);
 
     async function loadClients() {
@@ -31,7 +65,7 @@ export default function RecordNotePage() {
             if (user) {
                 const { data } = await supabase
                     .from('clients')
-                    .select('id, full_name')
+                    .select('id, full_name, client_goals')
                     .eq('coach_id', user.id)
                     .order('full_name');
 
@@ -52,28 +86,269 @@ export default function RecordNotePage() {
         { type: 'bad' as MoodType, emoji: '😟', label: 'Needs Attention', color: '#dc2626', bgColor: 'rgba(220, 38, 38, 0.1)' },
     ];
 
-    const handleRecordToggle = () => {
-        if (!selectedMood) {
-            alert('Please select a mood before recording');
-            return;
-        }
-        if (!selectedClient) {
-            alert('Please select a client before recording');
-            return;
-        }
-        setIsRecording(!isRecording);
-
-        // TODO: Implement actual voice recording
-        if (!isRecording) {
-            // Start recording simulation
-            setTranscript('');
-        } else {
-            // Stop recording - simulate transcript
-            setTranscript('Voice recording will be transcribed here using AI...');
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            
+            mediaRecorderRef.current = mediaRecorder;
+            audioChunksRef.current = [];
+            
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
+            };
+            
+            mediaRecorder.onstop = () => {
+                stream.getTracks().forEach(track => track.stop());
+                
+                // Create audio blob for playback
+                const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                setAudioBlob(blob);
+                
+                // Create URL for audio playback
+                const url = URL.createObjectURL(blob);
+                setAudioUrl(url);
+                
+                setProcessingStep('recorded');
+            };
+            
+            mediaRecorder.start(1000); // Collect data every second
+            setIsRecording(true);
+            setProcessingStep('recording');
+            setError('');
+            
+            // Start timer
+            timerRef.current = setInterval(() => {
+                setRecordingTime(prev => {
+                    // Auto-stop at max time
+                    if (prev >= MAX_RECORDING_TIME - 1) {
+                        stopRecording();
+                        return prev;
+                    }
+                    return prev + 1;
+                });
+            }, 1000);
+            
+        } catch (err) {
+            console.error('Failed to start recording:', err);
+            setError('Could not access microphone. Please allow microphone permission.');
         }
     };
 
-    const canRecord = selectedMood && selectedClient;
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            // Check minimum recording time
+            if (recordingTime < MIN_RECORDING_TIME) {
+                setError(`Please record for at least ${MIN_RECORDING_TIME} seconds.`);
+                return;
+            }
+            
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+            
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+        }
+    };
+
+    const handlePlayPause = () => {
+        if (!audioRef.current) return;
+        
+        if (isPlaying) {
+            audioRef.current.pause();
+        } else {
+            audioRef.current.play();
+        }
+        setIsPlaying(!isPlaying);
+    };
+
+    const handleAudioEnded = () => {
+        setIsPlaying(false);
+    };
+
+    const handleReRecord = () => {
+        // Cleanup audio URL
+        if (audioUrl) {
+            URL.revokeObjectURL(audioUrl);
+        }
+        
+        setAudioBlob(null);
+        setAudioUrl(null);
+        setRecordingTime(0);
+        setProcessingStep('idle');
+        setError('');
+    };
+
+    const handleTranscribe = async () => {
+        if (!audioBlob) return;
+        
+        setProcessingStep('transcribing');
+        
+        try {
+            // Send to transcription API
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+            
+            const transcribeResponse = await fetch('/api/transcribe', {
+                method: 'POST',
+                body: formData,
+            });
+            
+            const transcribeData = await transcribeResponse.json();
+            
+            if (!transcribeData.success) {
+                throw new Error(transcribeData.error || 'Transcription failed');
+            }
+            
+            setRawTranscript(transcribeData.transcript);
+            
+            // Format the note with GPT-4
+            setProcessingStep('formatting');
+            
+            const selectedClientData = clients.find(c => c.id === selectedClient);
+            
+            const formatResponse = await fetch('/api/format-note', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    transcript: transcribeData.transcript,
+                    clientName: selectedClientData?.full_name || 'Client',
+                    clientGoals: selectedClientData?.client_goals || '',
+                    mood: selectedMood,
+                }),
+            });
+            
+            const formatData = await formatResponse.json();
+            
+            if (!formatData.success) {
+                throw new Error(formatData.error || 'Formatting failed');
+            }
+            
+            setFormattedNote(formatData.formattedNote);
+            setSummary(formatData.summary);
+            setTags(formatData.tags || []);
+            setProcessingStep('ready');
+            
+        } catch (err) {
+            console.error('Processing error:', err);
+            setError(err instanceof Error ? err.message : 'Processing failed');
+            setProcessingStep('recorded'); // Go back to recorded state
+        }
+    };
+
+    const handleRecordToggle = () => {
+        if (!selectedMood) {
+            setError('Please select a mood before recording');
+            return;
+        }
+        if (!selectedClient) {
+            setError('Please select a client before recording');
+            return;
+        }
+        
+        if (isRecording) {
+            stopRecording();
+        } else {
+            setRecordingTime(0);
+            startRecording();
+        }
+    };
+
+    const handleSaveNote = async () => {
+        setProcessingStep('saving');
+        
+        try {
+            // Get GPS
+            let latitude: number | undefined;
+            let longitude: number | undefined;
+            
+            if (navigator.geolocation) {
+                try {
+                    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 5000,
+                        });
+                    });
+                    latitude = position.coords.latitude;
+                    longitude = position.coords.longitude;
+                } catch {
+                    console.warn('GPS not available');
+                }
+            }
+            
+            const selectedClientData = clients.find(c => c.id === selectedClient);
+            
+            const response = await fetch('/api/entries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    clientId: selectedClient,
+                    clientName: selectedClientData?.full_name,
+                    mood: selectedMood,
+                    rawTranscript: rawTranscript,
+                    formattedNote: formattedNote,
+                    summary: summary,
+                    tags: tags,
+                    consumerHours: consumerHours ? parseFloat(consumerHours) : null,
+                    latitude,
+                    longitude,
+                }),
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to save');
+            }
+            
+            setProcessingStep('saved');
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                resetForm();
+            }, 2000);
+            
+        } catch (err) {
+            console.error('Save error:', err);
+            setError(err instanceof Error ? err.message : 'Failed to save note');
+            setProcessingStep('ready');
+        }
+    };
+
+    const resetForm = () => {
+        // Cleanup audio URL
+        if (audioUrl) {
+            URL.revokeObjectURL(audioUrl);
+        }
+        
+        setProcessingStep('idle');
+        setSelectedMood(null);
+        setSelectedClient('');
+        setRawTranscript('');
+        setFormattedNote('');
+        setSummary('');
+        setTags([]);
+        setRecordingTime(0);
+        setError('');
+        setIsEditing(false);
+        setAudioBlob(null);
+        setAudioUrl(null);
+        setConsumerHours('');
+    };
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const canRecord = selectedMood && selectedClient && processingStep === 'idle';
+    const isProcessing = ['transcribing', 'formatting', 'saving'].includes(processingStep);
 
     return (
         <div className={styles.container}>
@@ -84,7 +359,7 @@ export default function RecordNotePage() {
             </div>
 
             <div className={styles.card}>
-                {/* Mood Selector - REQUIRED */}
+                {/* Mood Selector */}
                 <div className={styles.moodSection}>
                     <p className={styles.moodLabel}>How is the client today?</p>
                     <div className={styles.moodButtons}>
@@ -97,6 +372,7 @@ export default function RecordNotePage() {
                                     background: selectedMood === mood.type ? mood.bgColor : '#f8fafc',
                                 }}
                                 onClick={() => setSelectedMood(mood.type)}
+                                disabled={processingStep !== 'idle'}
                             >
                                 <span className={styles.moodEmoji}>{mood.emoji}</span>
                                 <span className={styles.moodText} style={{ color: selectedMood === mood.type ? mood.color : '#64748b' }}>
@@ -117,7 +393,7 @@ export default function RecordNotePage() {
                         value={selectedClient}
                         onChange={(e) => setSelectedClient(e.target.value)}
                         className={styles.clientSelect}
-                        disabled={loading}
+                        disabled={loading || processingStep !== 'idle'}
                     >
                         <option value="">Choose a client...</option>
                         {clients.map((client) => (
@@ -132,49 +408,190 @@ export default function RecordNotePage() {
                 </div>
 
                 {/* Recording Prompts */}
-                <div className={styles.promptsSection}>
-                    <p className={styles.promptTitle}>Cover these points:</p>
-                    <ul className={styles.promptList}>
-                        <li>What went well today?</li>
-                        <li>Any behaviors or concerns?</li>
-                        <li>Supports or interventions used?</li>
-                    </ul>
-                </div>
+                {processingStep === 'idle' && (
+                    <div className={styles.promptsSection}>
+                        <p className={styles.promptTitle}>Cover these points in your note:</p>
+                        <ul className={styles.promptList}>
+                            <li>What tasks did the client work on today?</li>
+                            <li>What went well? Any progress made?</li>
+                            <li>Any behaviors, concerns, or challenges?</li>
+                            <li>What support or interventions did you provide?</li>
+                        </ul>
+                    </div>
+                )}
 
-                {/* Record Button */}
-                <div className={styles.recordSection}>
-                    <button
-                        className={`${styles.recordButton} ${isRecording ? styles.recordButtonRecording : styles.recordButtonIdle}`}
-                        onClick={handleRecordToggle}
-                        disabled={!canRecord}
-                        style={{ opacity: canRecord ? 1 : 0.5 }}
-                    >
-                        {isRecording ? (
-                            <MicOff size={48} className={styles.recordIcon} />
-                        ) : (
-                            <Mic size={48} className={styles.recordIcon} />
+                {/* Error Display */}
+                {error && (
+                    <div className={styles.errorBox}>
+                        {error}
+                    </div>
+                )}
+
+                {/* Record Button - only show when idle or recording */}
+                {(processingStep === 'idle' || processingStep === 'recording') && (
+                    <div className={styles.recordSection}>
+                        <button
+                            className={`${styles.recordButton} ${isRecording ? styles.recordButtonRecording : styles.recordButtonIdle}`}
+                            onClick={handleRecordToggle}
+                            disabled={!canRecord && !isRecording}
+                            style={{ opacity: (canRecord || isRecording) ? 1 : 0.5 }}
+                        >
+                            {isRecording ? (
+                                <MicOff size={48} className={styles.recordIcon} />
+                            ) : (
+                                <Mic size={48} className={styles.recordIcon} />
+                            )}
+                        </button>
+                        {isRecording && (
+                            <p className={styles.recordingTime}>{formatTime(recordingTime)}</p>
                         )}
-                    </button>
-                    <p className={`${styles.recordStatus} ${isRecording ? styles.recordStatusRecording : ''}`}>
-                        {!canRecord ? 'Select mood & client to start' : (isRecording ? 'Recording... Tap to stop' : 'Tap to record')}
-                    </p>
-                </div>
+                        <p className={`${styles.recordStatus} ${isRecording ? styles.recordStatusRecording : ''}`}>
+                            {!canRecord && !isRecording ? 'Select mood & client to start' : (isRecording ? 'Recording... Tap to stop' : 'Tap to record')}
+                        </p>
+                        {isRecording && (
+                            <p className={styles.recordingHint}>
+                                Min: {MIN_RECORDING_TIME}s | Max: {formatTime(MAX_RECORDING_TIME)}
+                            </p>
+                        )}
+                    </div>
+                )}
+
+                {/* Audio Playback Section - after recording */}
+                {processingStep === 'recorded' && audioUrl && (
+                    <div className={styles.playbackSection}>
+                        <p className={styles.playbackTitle}>Review Your Recording</p>
+                        <p className={styles.playbackDuration}>Duration: {formatTime(recordingTime)}</p>
+                        
+                        <audio 
+                            ref={audioRef} 
+                            src={audioUrl} 
+                            onEnded={handleAudioEnded}
+                        />
+                        
+                        <div className={styles.playbackControls}>
+                            <button 
+                                className={styles.playButton}
+                                onClick={handlePlayPause}
+                            >
+                                {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                                {isPlaying ? 'Pause' : 'Play'}
+                            </button>
+                        </div>
+                        
+                        <div className={styles.playbackActions}>
+                            <button 
+                                className={styles.reRecordButton}
+                                onClick={handleReRecord}
+                            >
+                                <RotateCcw size={18} />
+                                Re-record
+                            </button>
+                            <button 
+                                className={styles.transcribeButton}
+                                onClick={handleTranscribe}
+                            >
+                                <Send size={18} />
+                                Transcribe with AI
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Processing State */}
+                {isProcessing && (
+                    <div className={styles.processingContainer}>
+                        <Loader2 size={48} className={styles.spinner} />
+                        <p className={styles.processingText}>
+                            {processingStep === 'transcribing' && 'Transcribing audio...'}
+                            {processingStep === 'formatting' && 'Formatting note with AI...'}
+                            {processingStep === 'saving' && 'Saving note...'}
+                        </p>
+                    </div>
+                )}
+
+                {/* Success State */}
+                {processingStep === 'saved' && (
+                    <div className={styles.successContainer}>
+                        <Check size={48} className={styles.successIcon} />
+                        <p className={styles.successText}>Note saved successfully!</p>
+                    </div>
+                )}
 
                 {/* Transcript Preview */}
-                {transcript && (
+                {processingStep === 'ready' && formattedNote && (
                     <div className={styles.transcriptSection}>
-                        <label className={styles.transcriptLabel}>
-                            <Sparkles size={16} />
-                            AI Transcript
-                        </label>
-                        <div className={styles.transcriptBox}>
-                            <p className={styles.transcriptText}>{transcript}</p>
+                        <div className={styles.transcriptHeader}>
+                            <label className={styles.transcriptLabel}>
+                                <Sparkles size={16} />
+                                AI Formatted Note
+                            </label>
+                            <button 
+                                className={styles.editButton}
+                                onClick={() => setIsEditing(!isEditing)}
+                            >
+                                <Edit3 size={14} />
+                                {isEditing ? 'Done' : 'Edit'}
+                            </button>
+                        </div>
+                        
+                        {summary && (
+                            <p className={styles.summaryText}>{summary}</p>
+                        )}
+                        
+                        {isEditing ? (
+                            <textarea
+                                value={formattedNote}
+                                onChange={(e) => setFormattedNote(e.target.value)}
+                                className={styles.transcriptTextarea}
+                                rows={6}
+                            />
+                        ) : (
+                            <div className={styles.transcriptBox}>
+                                <p className={styles.transcriptText}>{formattedNote}</p>
+                            </div>
+                        )}
+                        
+                        {tags.length > 0 && (
+                            <div className={styles.tagsContainer}>
+                                {tags.map((tag, index) => (
+                                    <span key={index} className={styles.tag}>{tag}</span>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Consumer Hours Input */}
+                        <div className={styles.hoursSection}>
+                            <label className={styles.hoursLabel}>
+                                Consumer Worked Hours
+                                <span className={styles.hoursHint}>(Hours client worked, not coaching hours)</span>
+                            </label>
+                            <input
+                                type="number"
+                                step="0.5"
+                                min="0"
+                                max="24"
+                                placeholder="e.g., 6.5"
+                                value={consumerHours}
+                                onChange={(e) => setConsumerHours(e.target.value)}
+                                className={styles.hoursInput}
+                            />
                         </div>
 
-                        <button className={styles.submitButton}>
-                            <Check size={20} />
-                            Save Note
-                        </button>
+                        <div className={styles.actionButtons}>
+                            <button 
+                                className={styles.cancelButton}
+                                onClick={resetForm}
+                            >
+                                Discard
+                            </button>
+                            <button 
+                                className={styles.submitButton}
+                                onClick={handleSaveNote}
+                            >
+                                <Check size={20} />
+                                Save Note
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
