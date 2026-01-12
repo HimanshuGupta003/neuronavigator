@@ -15,6 +15,10 @@ interface Client {
     emergency_contact_name: string | null;
     emergency_contact_phone: string | null;
     program_start_date: string | null;
+    dor_counselor_name: string | null;
+    dor_counselor_phone: string | null;
+    hourly_wage: number | null;
+    vendor: string | null;
     coach_id: string;
     created_at: string;
 }
@@ -43,6 +47,10 @@ export default function ClientsPage() {
         emergency_contact_name: '',
         emergency_contact_phone: '',
         program_start_date: '',
+        dor_counselor_name: '',
+        dor_counselor_phone: '',
+        hourly_wage: '',
+        vendor: 'v-Enable Pathways',
     });
 
     useEffect(() => {
@@ -85,6 +93,10 @@ export default function ClientsPage() {
                     emergency_contact_name: newClient.emergency_contact_name || null,
                     emergency_contact_phone: newClient.emergency_contact_phone || null,
                     program_start_date: newClient.program_start_date || null,
+                    dor_counselor_name: newClient.dor_counselor_name || null,
+                    dor_counselor_phone: newClient.dor_counselor_phone || null,
+                    hourly_wage: newClient.hourly_wage ? parseFloat(newClient.hourly_wage) : null,
+                    vendor: newClient.vendor || 'v-Enable Pathways',
                     coach_id: user.id,
                 });
 
@@ -99,6 +111,10 @@ export default function ClientsPage() {
                 emergency_contact_name: '',
                 emergency_contact_phone: '',
                 program_start_date: '',
+                dor_counselor_name: '',
+                dor_counselor_phone: '',
+                hourly_wage: '',
+                vendor: 'v-Enable Pathways',
             });
             setShowAddModal(false);
             loadClients();
@@ -375,6 +391,68 @@ export default function ClientsPage() {
                                             value={newClient.emergency_contact_phone}
                                             onChange={(e) => setNewClient({ ...newClient, emergency_contact_phone: e.target.value })}
                                             placeholder="Phone"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* DOR Counselor Section */}
+                            <div className={styles.formSection}>
+                                <h3 className={styles.sectionTitle}>
+                                    <Users size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                                    DOR Counselor
+                                </h3>
+                                
+                                <div className={styles.inputRow}>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Counselor Name</label>
+                                        <input
+                                            type="text"
+                                            value={newClient.dor_counselor_name}
+                                            onChange={(e) => setNewClient({ ...newClient, dor_counselor_name: e.target.value })}
+                                            placeholder="DOR Counselor Name"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Counselor Phone</label>
+                                        <input
+                                            type="tel"
+                                            value={newClient.dor_counselor_phone}
+                                            onChange={(e) => setNewClient({ ...newClient, dor_counselor_phone: e.target.value })}
+                                            placeholder="Phone"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Billing Information Section */}
+                            <div className={styles.formSection}>
+                                <h3 className={styles.sectionTitle}>
+                                    Billing Information
+                                </h3>
+                                
+                                <div className={styles.inputRow}>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Hourly Wage ($)</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={newClient.hourly_wage}
+                                            onChange={(e) => setNewClient({ ...newClient, hourly_wage: e.target.value })}
+                                            placeholder="15.00"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Vendor</label>
+                                        <input
+                                            type="text"
+                                            value={newClient.vendor}
+                                            onChange={(e) => setNewClient({ ...newClient, vendor: e.target.value })}
+                                            placeholder="v-Enable Pathways"
                                             className={styles.input}
                                         />
                                     </div>
