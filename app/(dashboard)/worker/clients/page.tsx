@@ -409,19 +409,19 @@ export default function ClientsPage() {
                             <h2 className={styles.safetyModalTitle}>Safety Link Ready</h2>
                         </div>
                         <p className={styles.safetyModalSubtitle}>
-                            Share this link with <strong>{safetyLinkModal.clientName}</strong> to give them access to the SOS button.
+                            Share this link with <strong>{safetyLinkModal.clientName}</strong> for SOS access.
                         </p>
 
                         {/* QR Code */}
                         <div className={styles.qrCodeSection}>
                             <QRCodeSVG 
                                 value={safetyLinkModal.link}
-                                size={160}
+                                size={140}
                                 level="M"
                                 bgColor="#ffffff"
                                 fgColor="#1e293b"
                             />
-                            <p className={styles.qrCodeHint}>Scan with phone camera</p>
+                            <p className={styles.qrCodeHint}>Scan to open • Then tap "Add to Home Screen"</p>
                         </div>
                         
                         <div className={styles.linkBox}>
@@ -432,34 +432,24 @@ export default function ClientsPage() {
                                 className={styles.linkInput}
                             />
                             <button onClick={handleCopyLink} className={styles.copyButton}>
-                                {copied ? <Check size={18} /> : <Copy size={18} />}
+                                {copied ? <Check size={16} /> : <Copy size={16} />}
                                 {copied ? 'Copied!' : 'Copy'}
                             </button>
                         </div>
 
-                        <div className={styles.safetyInstructions}>
-                            <p className={styles.instructionTitle}>Instructions:</p>
-                            <ol className={styles.instructionList}>
-                                <li>Send this link to the client via SMS or WhatsApp</li>
-                                <li>Have them open it in Safari/Chrome</li>
-                                <li>Tap "Add to Home Screen"</li>
-                                <li>The SOS button will appear as an app icon</li>
-                            </ol>
-                        </div>
-
                         <div className={styles.safetyModalActions}>
-                            <button 
-                                className={styles.revokeButton}
-                                onClick={handleRevokeLink}
-                                disabled={revoking}
-                            >
-                                {revoking ? 'Revoking...' : 'Revoke Link'}
-                            </button>
                             <button 
                                 className={styles.safetyCloseButton}
                                 onClick={() => setSafetyLinkModal({show: false, link: '', clientName: '', clientId: ''})}
                             >
                                 Done
+                            </button>
+                            <button 
+                                className={styles.revokeButton}
+                                onClick={handleRevokeLink}
+                                disabled={revoking}
+                            >
+                                {revoking ? 'Revoking...' : 'Revoke'}
                             </button>
                         </div>
                     </div>

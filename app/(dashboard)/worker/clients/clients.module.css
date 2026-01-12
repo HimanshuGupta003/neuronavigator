@@ -752,48 +752,51 @@
 }
 
 .safetyCloseButton {
-    width: 100%;
-    padding: 14px;
+    flex: 3;
+    padding: 14px 24px;
     background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     color: white;
     border: none;
     border-radius: 12px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
 }
 
 .safetyCloseButton:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
 }
 
 .safetyModalActions {
     display: flex;
-    gap: 12px;
-    margin-top: 4px;
+    gap: 10px;
+    margin-top: 8px;
 }
 
 .revokeButton {
     flex: 1;
-    padding: 14px;
-    background: #f1f5f9;
-    color: #dc2626;
-    border: 1px solid #fee2e2;
+    padding: 14px 16px;
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .revokeButton:hover {
-    background: #fee2e2;
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
 }
 
 .revokeButton:disabled {
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
@@ -801,7 +804,16 @@
 @media (max-width: 480px) {
     .safetyModal {
         border-radius: 24px 24px 0 0;
-        max-height: 85vh;
+        max-height: 90vh;
+        padding: 24px;
+    }
+
+    .safetyModalTitle {
+        font-size: 20px;
+    }
+
+    .qrCodeSection {
+        padding: 16px;
     }
 
     .linkBox {
@@ -813,6 +825,14 @@
     }
 
     .safetyModalActions {
-        flex-direction: column-reverse;
+        flex-direction: row;
+    }
+
+    .safetyCloseButton {
+        flex: 2;
+    }
+
+    .revokeButton {
+        flex: 1;
     }
 }
