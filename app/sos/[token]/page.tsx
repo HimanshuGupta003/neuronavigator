@@ -22,6 +22,9 @@ export default function ClientSOSPage({ params }: PageProps) {
 
     const verifyToken = async () => {
         try {
+            // Save token to localStorage for PWA home screen launch
+            localStorage.setItem('sos_token', token);
+            
             // Simple verification by attempting to get client info
             // In production, you might want a dedicated verify endpoint
             setStatus('idle');

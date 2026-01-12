@@ -28,9 +28,10 @@ export default function ClientsPage() {
     const [error, setError] = useState('');
 
     // Safety Link state
-    const [safetyLinkModal, setSafetyLinkModal] = useState<{show: boolean; link: string; clientName: string}>({show: false, link: '', clientName: ''});
+    const [safetyLinkModal, setSafetyLinkModal] = useState<{show: boolean; link: string; clientName: string; clientId: string}>({show: false, link: '', clientName: '', clientId: ''});
     const [generatingLink, setGeneratingLink] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [revoking, setRevoking] = useState(false);
 
     // Form state with new fields
     const [newClient, setNewClient] = useState({
@@ -123,7 +124,7 @@ export default function ClientsPage() {
             });
             const data = await response.json();
             if (data.success) {
-                setSafetyLinkModal({ show: true, link: data.link, clientName });
+                setSafetyLinkModal({ show: true, link: data.link, clientName, clientId });
             } else {
                 setError(data.error || 'Failed to generate link');
             }
@@ -138,6 +139,30 @@ export default function ClientsPage() {
         await navigator.clipboard.writeText(safetyLinkModal.link);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleRevokeLink = async () => {
+        if (!safetyLinkModal.clientId) return;
+        setRevoking(true);
+        try {
+            const response = await fetch('/api/safety-link/revoke', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clientId: safetyLinkModal.clientId }),
+            });
+            const data = await response.json();
+            if (data.success) {
+                setSafetyLinkModal({ show: false, link: '', clientName: '', clientId: '' });
+                // Show success message briefly
+                setError(''); // Clear any error
+            } else {
+                setError(data.error || 'Failed to revoke link');
+            }
+        } catch (err) {
+            setError('Failed to revoke safety link');
+        } finally {
+            setRevoking(false);
+        }
     };
 
     return (
@@ -376,7 +401,7 @@ export default function ClientsPage() {
 
             {/* Safety Link Modal */}
             {safetyLinkModal.show && (
-                <div className={styles.modalOverlay} onClick={() => setSafetyLinkModal({show: false, link: '', clientName: ''})}>
+                <div className={styles.modalOverlay} onClick={() => setSafetyLinkModal({show: false, link: '', clientName: '', clientId: ''})}>
                     <div className={styles.safetyModal} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.safetyModalHeader}>
                             <Shield size={28} className={styles.safetyModalIcon} />
@@ -409,12 +434,21 @@ export default function ClientsPage() {
                             </ol>
                         </div>
 
-                        <button 
-                            className={styles.safetyCloseButton}
-                            onClick={() => setSafetyLinkModal({show: false, link: '', clientName: ''})}
-                        >
-                            Done
-                        </button>
+                        <div className={styles.safetyModalActions}>
+                            <button 
+                                className={styles.revokeButton}
+                                onClick={handleRevokeLink}
+                                disabled={revoking}
+                            >
+                                {revoking ? 'Revoking...' : 'Revoke Link'}
+                            </button>
+                            <button 
+                                className={styles.safetyCloseButton}
+                                onClick={() => setSafetyLinkModal({show: false, link: '', clientName: '', clientId: ''})}
+                            >
+                                Done
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

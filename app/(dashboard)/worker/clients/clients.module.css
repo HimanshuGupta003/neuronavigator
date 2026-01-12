@@ -751,6 +751,34 @@
     box-shadow: 0 6px 20px rgba(2, 132, 199, 0.3);
 }
 
+.safetyModalActions {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.revokeButton {
+    flex: 1;
+    padding: 14px;
+    background: #f1f5f9;
+    color: #dc2626;
+    border: 1px solid #fee2e2;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.revokeButton:hover {
+    background: #fee2e2;
+}
+
+.revokeButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
 /* Mobile Safety Modal */
 @media (max-width: 480px) {
     .safetyModal {
@@ -764,5 +792,9 @@
 
     .copyButton {
         justify-content: center;
+    }
+
+    .safetyModalActions {
+        flex-direction: column-reverse;
     }
 }
