@@ -19,14 +19,13 @@ export default function JobCoachesPage() {
 
     async function loadCoaches() {
         try {
-            const { data } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('role', 'worker')
-                .order('created_at', { ascending: false });
-
-            if (data) {
-                setCoaches(data as Profile[]);
+            const response = await fetch('/api/admin/coaches');
+            const data = await response.json();
+            
+            if (response.ok) {
+                setCoaches(data.coaches as Profile[]);
+            } else {
+                console.error('Failed to load coaches:', data.error);
             }
         } catch (error) {
             console.error('Failed to load coaches:', error);

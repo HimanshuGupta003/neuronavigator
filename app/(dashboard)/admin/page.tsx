@@ -24,44 +24,14 @@ export default function AdminDashboardPage() {
 
     async function loadDashboard() {
         try {
-            const { count: coachesCount } = await supabase
-                .from('profiles')
-                .select('*', { count: 'exact', head: true })
-                .eq('role', 'worker');
-
-            const { count: invitationsCount } = await supabase
-                .from('invitations')
-                .select('*', { count: 'exact', head: true })
-                .is('used_at', null)
-                .gt('expires_at', new Date().toISOString());
-
-            const { count: entriesCount } = await supabase
-                .from('entries')
-                .select('*', { count: 'exact', head: true });
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const { count: todayCount } = await supabase
-                .from('entries')
-                .select('*', { count: 'exact', head: true })
-                .gte('created_at', today.toISOString());
-
-            const { data: coaches } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('role', 'worker')
-                .order('created_at', { ascending: false })
-                .limit(5);
-
-            setStats({
-                totalCoaches: coachesCount || 0,
-                pendingInvitations: invitationsCount || 0,
-                totalEntries: entriesCount || 0,
-                todayEntries: todayCount || 0,
-            });
-
-            if (coaches) {
-                setRecentCoaches(coaches as Profile[]);
+            const response = await fetch('/api/admin/stats');
+            const data = await response.json();
+            
+            if (response.ok) {
+                setStats(data.stats);
+                setRecentCoaches(data.recentCoaches as Profile[]);
+            } else {
+                console.error('Failed to load stats:', data.error);
             }
         } catch (error) {
             console.error('Failed to load dashboard:', error);
