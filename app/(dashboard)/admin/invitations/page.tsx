@@ -11,7 +11,6 @@ export default function InvitationsPage() {
     const [invitations, setInvitations] = useState<Invitation[]>([]);
     const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState('');
-    const [coachName, setCoachName] = useState('');
     const [sending, setSending] = useState(false);
     const [success, setSuccess] = useState<{ link: string; emailSent: boolean } | null>(null);
     const [error, setError] = useState('');
@@ -48,7 +47,7 @@ export default function InvitationsPage() {
             const response = await fetch('/api/auth/invite', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, name: coachName }),
+                body: JSON.stringify({ email }),
             });
 
             const data = await response.json();
@@ -59,7 +58,6 @@ export default function InvitationsPage() {
 
             setSuccess({ link: data.data.invitationLink, emailSent: data.data.emailSent });
             setEmail('');
-            setCoachName('');
             loadInvitations();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to send invitation');
@@ -99,28 +97,19 @@ export default function InvitationsPage() {
                 <p className={styles.cardSubtitle}>Send an invitation link to a Job Coach's email address</p>
 
                 <form onSubmit={handleInvite} className={styles.inviteForm}>
-                    <div className={styles.formFields}>
-                        <div className={styles.inputGroup}>
-                            <label className={styles.inputLabel}>Coach Name (optional)</label>
-                            <input
-                                type="text"
-                                placeholder="Enter coach's full name"
-                                value={coachName}
-                                onChange={(e) => setCoachName(e.target.value)}
-                                className={styles.textInput}
-                            />
-                        </div>
-                        <div className={styles.inputGroup}>
-                            <label className={styles.inputLabel}>Email Address *</label>
-                            <input
-                                type="email"
-                                placeholder="Enter Job Coach's email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                className={styles.emailInput}
-                            />
-                        </div>
+                    <div className={styles.inputGroup}>
+                        <label className={styles.inputLabel}>
+                            <Mail size={16} />
+                            Email Address
+                        </label>
+                        <input
+                            type="email"
+                            placeholder="coach@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className={styles.emailInput}
+                        />
                     </div>
                     <button type="submit" disabled={sending} className={styles.sendButton}>
                         <Sparkles size={18} />
