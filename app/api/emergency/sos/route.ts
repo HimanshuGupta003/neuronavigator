@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
             minute: '2-digit',
         });
 
-        const emergencyMessage = `🚨 EMERGENCY ALERT - NeuroNavigator
+        const emergencyMessage = `🚨 EMERGENCY ALERT - CoachAlly
 
 Coach: ${coachName || 'Unknown'}
 Email: ${coachEmail || 'Unknown'}

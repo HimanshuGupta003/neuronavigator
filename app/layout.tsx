@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NeuroNavigator - AI-Powered Field Reporting",
+  title: "CoachAlly - AI-Powered Field Reporting",
   description: "AI-powered field reporting tool for Job Coaches and support staff. Record voice logs and generate professional, audit-ready PDF reports automatically.",
   manifest: "/manifest.json",
 };

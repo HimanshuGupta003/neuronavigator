@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Users, Search, Plus, UserPlus, X, Building2, Hash, Phone, Target, Calendar, Shield, Copy, Check, Link2 } from 'lucide-react';
+import { Users, Search, Plus, UserPlus, X, Building2, Hash, Phone, Target, Calendar, Shield, Copy, Check, Link2, Share } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import styles from './clients.module.css';
 
@@ -626,7 +626,9 @@ export default function ClientsPage() {
                                 bgColor="#ffffff"
                                 fgColor="#1e293b"
                             />
-                            <p className={styles.qrCodeHint}>Scan to open • Then tap "Add to Home Screen"</p>
+                            <p className={styles.qrCodeHint}>
+                                Scan to open • Then tap <Share size={12} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px' }} /> and &quot;Add to Home Screen&quot;
+                            </p>
                         </div>
                         
                         <div className={styles.linkBox}>

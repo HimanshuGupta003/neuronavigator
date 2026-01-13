@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Calendar, Download, User, Clock } from 'lucide-react';
+import { FileText, Calendar, Download, User, Clock, Eye, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import styles from './reports.module.css';
 
@@ -18,6 +18,8 @@ export default function WorkerReportsPage() {
     const [endDate, setEndDate] = useState('');
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
+    const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+    const [showPreview, setShowPreview] = useState(false);
 
     useEffect(() => {
         loadClients();
@@ -77,7 +79,7 @@ export default function WorkerReportsPage() {
         return date.toISOString().split('T')[0];
     }
 
-    const handleGenerate = async () => {
+    const handleGenerate = async (preview: boolean = false) => {
         if (!selectedClient || !startDate || !endDate) {
             alert('Please select a client and date range');
             return;
@@ -85,16 +87,60 @@ export default function WorkerReportsPage() {
 
         setGenerating(true);
 
-        // TODO: Implement actual PDF generation
-        // This would:
-        // 1. Fetch entries for the selected client within date range
-        // 2. Send to AI for processing
-        // 3. Generate PDF with government form template
+        try {
+            // Call PDF generation API
+            const response = await fetch(
+                `/api/generate-pdf?clientId=${selectedClient}&startDate=${startDate}&endDate=${endDate}`
+            );
 
-        setTimeout(() => {
-            alert('PDF generation coming soon! This will generate a report for the selected date range.');
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to generate PDF');
+            }
+
+            // Get the PDF blob
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            
+            if (preview) {
+                // Show preview modal
+                setPdfUrl(url);
+                setShowPreview(true);
+            } else {
+                // Direct download
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Report_${startDate}_to_${endDate}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            console.error('PDF generation failed:', error);
+            alert(error instanceof Error ? error.message : 'Failed to generate PDF');
+        } finally {
             setGenerating(false);
-        }, 1500);
+        }
+    };
+
+    const handleClosePreview = () => {
+        if (pdfUrl) {
+            window.URL.revokeObjectURL(pdfUrl);
+        }
+        setPdfUrl(null);
+        setShowPreview(false);
+    };
+
+    const handleDownloadFromPreview = () => {
+        if (pdfUrl) {
+            const a = document.createElement('a');
+            a.href = pdfUrl;
+            a.download = `Report_${startDate}_to_${endDate}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
     };
 
     const isFormValid = selectedClient && startDate && endDate;
@@ -197,24 +243,34 @@ export default function WorkerReportsPage() {
                     </div>
                 )}
 
-                {/* Generate Button */}
-                <button
-                    className={styles.generateButton}
-                    onClick={handleGenerate}
-                    disabled={!isFormValid || generating}
-                >
-                    {generating ? (
-                        <>
-                            <div className={styles.spinner}></div>
-                            Generating...
-                        </>
-                    ) : (
-                        <>
-                            <FileText size={20} />
-                            Generate PDF Report
-                        </>
-                    )}
-                </button>
+                {/* Action Buttons */}
+                <div className={styles.buttonRow}>
+                    <button
+                        className={styles.previewButton}
+                        onClick={() => handleGenerate(true)}
+                        disabled={!isFormValid || generating}
+                    >
+                        <Eye size={20} />
+                        Preview
+                    </button>
+                    <button
+                        className={styles.generateButton}
+                        onClick={() => handleGenerate(false)}
+                        disabled={!isFormValid || generating}
+                    >
+                        {generating ? (
+                            <>
+                                <div className={styles.spinner}></div>
+                                Generating...
+                            </>
+                        ) : (
+                            <>
+                                <Download size={20} />
+                                Download PDF
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
 
             {/* Info Card */}
@@ -222,11 +278,37 @@ export default function WorkerReportsPage() {
                 <h3 className={styles.infoTitle}>How it works</h3>
                 <ul className={styles.infoList}>
                     <li>Select a client and date range</li>
-                    <li>AI pulls all notes from that period</li>
-                    <li>Generates a professional PDF report</li>
-                    <li>Download for billing submission</li>
+                    <li>Preview or download professional PDF report</li>
+                    <li>Includes attendance log and AI narratives</li>
+                    <li>Submit for billing</li>
                 </ul>
             </div>
+
+            {/* PDF Preview Modal */}
+            {showPreview && pdfUrl && (
+                <div className={styles.previewOverlay} onClick={handleClosePreview}>
+                    <div className={styles.previewModal} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.previewHeader}>
+                            <h3>Report Preview</h3>
+                            <div className={styles.previewActions}>
+                                <button onClick={handleDownloadFromPreview} className={styles.downloadBtn}>
+                                    <Download size={18} />
+                                    Download
+                                </button>
+                                <button onClick={handleClosePreview} className={styles.closeBtn}>
+                                    <X size={20} />
+                                </button>
+                            </div>
+                        </div>
+                        <iframe 
+                            src={pdfUrl} 
+                            className={styles.pdfFrame}
+                            title="PDF Preview"
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
+

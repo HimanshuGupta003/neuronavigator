@@ -780,19 +780,19 @@
     flex: 1;
     padding: 14px 16px;
     background: transparent;
-    color: #94a3b8;
-    border: 1px solid #e2e8f0;
+    color: #dc2626;
+    border: 1px solid #fecaca;
     border-radius: 12px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .revokeButton:hover {
     background: #fef2f2;
-    color: #dc2626;
-    border-color: #fecaca;
+    color: #b91c1c;
+    border-color: #f87171;
 }
 
 .revokeButton:disabled {

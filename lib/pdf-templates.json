@@ -1,0 +1,73 @@
+{
+  "templates": {
+    "universal": {
+      "name": "Universal Monthly Report",
+      "description": "Standard report format for most agencies",
+      "version": "1.0",
+      "sections": {
+        "header": {
+          "enabled": true,
+          "fields": ["consumer_name", "uci", "vendor", "month_year", "job_site"]
+        },
+        "attendance": {
+          "enabled": true,
+          "columns": ["date", "start_time", "end_time", "coach_hours", "consumer_hours"],
+          "showTotals": true
+        },
+        "narrative": {
+          "enabled": true,
+          "groupByDay": true,
+          "headers": [
+            "Tasks & Productivity",
+            "Barriers & Behaviors", 
+            "Interventions",
+            "Progress on Goals"
+          ]
+        },
+        "signatures": {
+          "enabled": true,
+          "fields": ["consumer", "coach"],
+          "includeDate": true
+        }
+      },
+      "styling": {
+        "primaryColor": "#0284c7",
+        "fontFamily": "helvetica",
+        "headerSize": 20,
+        "bodySize": 10
+      }
+    },
+    "dr384": {
+      "name": "DR384 - DOR Form",
+      "description": "California Department of Rehabilitation form",
+      "version": "1.0",
+      "extends": "universal",
+      "sections": {
+        "header": {
+          "fields": ["consumer_name", "uci", "vendor", "dor_counselor", "job_site", "wage"]
+        }
+      }
+    },
+    "regional_center": {
+      "name": "Regional Center Report",
+      "description": "Format for Regional Center submissions",
+      "version": "1.0",
+      "extends": "universal",
+      "sections": {
+        "header": {
+          "fields": ["consumer_name", "uci", "vendor", "authorization_number", "service_code"]
+        }
+      }
+    }
+  },
+  "fieldMappings": {
+    "consumer_name": { "source": "clients.full_name", "label": "Consumer" },
+    "uci": { "source": "clients.uci", "label": "UCI #" },
+    "vendor": { "source": "clients.vendor", "label": "Vendor", "default": "v-Enable Pathways" },
+    "job_site": { "source": "clients.job_title", "label": "Job Site" },
+    "dor_counselor": { "source": "clients.dor_counselor_name", "label": "DOR Counselor" },
+    "wage": { "source": "clients.hourly_wage", "label": "Hourly Wage" },
+    "month_year": { "source": "auto", "label": "Month/Year" },
+    "se_provider": { "source": "clients.se_service_provider", "label": "SE Provider" }
+  }
+}

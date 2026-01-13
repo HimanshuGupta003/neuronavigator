@@ -157,7 +157,7 @@ function LoginContent() {
                             <Brain size={32} />
                         </div>
                         <div>
-                            <h1 className={styles.brandName}>NeuroNavigator</h1>
+                            <h1 className={styles.brandName}>CoachAlly</h1>
                             <p className={styles.brandTagline}>AI-Powered Field Reporting</p>
                         </div>
                     </div>

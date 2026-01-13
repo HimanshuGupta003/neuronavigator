@@ -1,6 +1,6 @@
 {
-  "name": "NeuroNavigator",
-  "short_name": "NeuroNav",
+  "name": "CoachAlly",
+  "short_name": "CoachAlly",
   "description": "AI-powered field reporting tool for Job Coaches and support staff",
   "start_url": "/",
   "display": "standalone",

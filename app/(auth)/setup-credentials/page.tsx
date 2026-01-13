@@ -489,7 +489,7 @@ export default function SetupCredentialsPage() {
                 position: 'relative',
                 zIndex: 10
             }}>
-                © {new Date().getFullYear()} NeuroNavigator. All rights reserved.
+                © {new Date().getFullYear()} CoachAlly. All rights reserved.
             </p>
 
             <style jsx global>{`
