@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Users, Search, Plus, UserPlus, X, Building2, Hash, Phone, Target, Calendar, Shield, Copy, Check, Link2, Share } from 'lucide-react';
+import { Users, Search, Plus, UserPlus, X, Building2, Hash, Phone, Target, Shield, Copy, Check, Share, ChevronDown } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import styles from './clients.module.css';
 
@@ -48,6 +48,26 @@ export default function ClientsPage() {
     const [generatingLink, setGeneratingLink] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const [revoking, setRevoking] = useState(false);
+
+    // Custom dropdown state
+    const [relationshipOpen, setRelationshipOpen] = useState(false);
+    const [placementOpen, setPlacementOpen] = useState(false);
+    const relationshipRef = useRef<HTMLDivElement>(null);
+    const placementRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (relationshipRef.current && !relationshipRef.current.contains(event.target as Node)) {
+                setRelationshipOpen(false);
+            }
+            if (placementRef.current && !placementRef.current.contains(event.target as Node)) {
+                setPlacementOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Form state with all DR384 fields
     const [newClient, setNewClient] = useState({
@@ -342,7 +362,7 @@ export default function ClientsPage() {
                                 <h3 className={styles.sectionTitle}>Basic Information</h3>
                                 
                                 <div className={styles.inputGroup}>
-                                    <label className={styles.inputLabel}>Full Name <span className={styles.required}>*</span></label>
+                                    <label className={styles.inputLabel}>Full Name</label>
                                     <input
                                         type="text"
                                         value={newClient.full_name}
@@ -388,10 +408,7 @@ export default function ClientsPage() {
                                 </div>
 
                                 <div className={styles.inputGroup}>
-                                    <label className={styles.inputLabel}>
-                                        <Calendar size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-                                        Program Start Date
-                                    </label>
+                                    <label className={styles.inputLabel}>Program Start Date</label>
                                     <input
                                         type="date"
                                         value={newClient.program_start_date}
@@ -441,19 +458,31 @@ export default function ClientsPage() {
                                     </div>
                                     <div className={styles.inputGroup}>
                                         <label className={styles.inputLabel}>Relationship</label>
-                                        <select
-                                            value={newClient.emergency_contact_relationship}
-                                            onChange={(e) => setNewClient({ ...newClient, emergency_contact_relationship: e.target.value })}
-                                            className={styles.input}
-                                        >
-                                            <option value="">Select relationship</option>
-                                            <option value="Parent">Parent</option>
-                                            <option value="Sibling">Sibling</option>
-                                            <option value="Spouse">Spouse</option>
-                                            <option value="Friend">Friend</option>
-                                            <option value="Guardian">Guardian</option>
-                                            <option value="Other">Other</option>
-                                        </select>
+                                        <div className={styles.customSelect} ref={relationshipRef}>
+                                            <div 
+                                                className={styles.selectTrigger}
+                                                onClick={() => setRelationshipOpen(!relationshipOpen)}
+                                            >
+                                                <span>{newClient.emergency_contact_relationship || 'Select relationship'}</span>
+                                                <ChevronDown size={18} className={`${styles.selectIcon} ${relationshipOpen ? styles.selectIconOpen : ''}`} />
+                                            </div>
+                                            {relationshipOpen && (
+                                                <div className={styles.selectMenu}>
+                                                    {['Parent', 'Sibling', 'Spouse', 'Friend', 'Guardian', 'Other'].map((option) => (
+                                                        <div 
+                                                            key={option}
+                                                            className={`${styles.selectOption} ${newClient.emergency_contact_relationship === option ? styles.selectOptionSelected : ''}`}
+                                                            onClick={() => {
+                                                                setNewClient({ ...newClient, emergency_contact_relationship: option });
+                                                                setRelationshipOpen(false);
+                                                            }}
+                                                        >
+                                                            {option}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -543,14 +572,37 @@ export default function ClientsPage() {
                                 <div className={styles.inputRow}>
                                     <div className={styles.inputGroup}>
                                         <label className={styles.inputLabel}>Placement Type</label>
-                                        <select
-                                            value={newClient.placement_type}
-                                            onChange={(e) => setNewClient({ ...newClient, placement_type: e.target.value })}
-                                            className={styles.input}
-                                        >
-                                            <option value="Individual">Individual Placement (IP)</option>
-                                            <option value="Group">Group Placement (GP)</option>
-                                        </select>
+                                        <div className={styles.customSelect} ref={placementRef}>
+                                            <div 
+                                                className={styles.selectTrigger}
+                                                onClick={() => setPlacementOpen(!placementOpen)}
+                                            >
+                                                <span>{newClient.placement_type === 'Individual' ? 'Individual Placement (IP)' : 'Group Placement (GP)'}</span>
+                                                <ChevronDown size={18} className={`${styles.selectIcon} ${placementOpen ? styles.selectIconOpen : ''}`} />
+                                            </div>
+                                            {placementOpen && (
+                                                <div className={styles.selectMenu}>
+                                                    <div 
+                                                        className={`${styles.selectOption} ${newClient.placement_type === 'Individual' ? styles.selectOptionSelected : ''}`}
+                                                        onClick={() => {
+                                                            setNewClient({ ...newClient, placement_type: 'Individual' });
+                                                            setPlacementOpen(false);
+                                                        }}
+                                                    >
+                                                        Individual Placement (IP)
+                                                    </div>
+                                                    <div 
+                                                        className={`${styles.selectOption} ${newClient.placement_type === 'Group' ? styles.selectOptionSelected : ''}`}
+                                                        onClick={() => {
+                                                            setNewClient({ ...newClient, placement_type: 'Group' });
+                                                            setPlacementOpen(false);
+                                                        }}
+                                                    >
+                                                        Group Placement (GP)
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className={styles.inputGroup}>
                                         <label className={styles.inputLabel}>Work Schedule</label>

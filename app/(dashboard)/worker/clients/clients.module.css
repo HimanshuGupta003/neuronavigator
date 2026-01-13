@@ -433,6 +433,7 @@
     border-radius: 12px;
     outline: none;
     transition: all 0.2s ease;
+    width: 100%;
 }
 
 .input::placeholder {
@@ -443,6 +444,49 @@
     border-color: #0284c7;
     box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
     background: #ffffff;
+}
+
+/* Beautiful Select/Dropdown Styling */
+select.input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 48px;
+    cursor: pointer;
+}
+
+select.input:hover {
+    border-color: #cbd5e1;
+    background-color: #ffffff;
+}
+
+select.input:focus {
+    border-color: #0284c7;
+    background-color: #ffffff;
+}
+
+select.input option {
+    padding: 12px;
+    background: #ffffff;
+    color: #1e293b;
+}
+
+/* Date Input Styling */
+input[type="date"].input {
+    cursor: pointer;
+}
+
+input[type="date"].input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+input[type="date"].input::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
 }
 
 .textarea {
@@ -468,6 +512,103 @@
     border-color: #0284c7;
     box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
     background: #ffffff;
+}
+
+/* Custom Dropdown Styles */
+.customSelect {
+    position: relative;
+    width: 100%;
+}
+
+.selectTrigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    height: 52px;
+    padding: 0 16px;
+    font-size: 15px;
+    color: #1e293b;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.selectTrigger span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.selectTrigger:hover {
+    border-color: #cbd5e1;
+    background: #ffffff;
+}
+
+.selectIcon {
+    color: #64748b;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.selectIconOpen {
+    transform: rotate(180deg);
+}
+
+.selectMenu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+    max-height: 240px;
+    overflow-y: auto;
+    animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.selectOption {
+    padding: 14px 16px;
+    font-size: 15px;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.selectOption:hover {
+    background: #f1f5f9;
+    color: #0284c7;
+}
+
+.selectOption:first-child {
+    border-radius: 10px 10px 0 0;
+}
+
+.selectOption:last-child {
+    border-radius: 0 0 10px 10px;
+}
+
+.selectOptionSelected {
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.1) 0%, rgba(2, 132, 199, 0.05) 100%);
+    color: #0284c7;
+    font-weight: 600;
 }
 
 .errorBox {

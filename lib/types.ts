@@ -38,19 +38,34 @@ export interface Shift {
 export interface Entry {
     id: string;
     worker_id: string;
+    client_id: string | null;
     shift_id: string | null;
     status: SiteStatus;
     mood: string;
-    summary: string | null;
-    formatted_note: string | null;
+    // Raw recording data
     audio_url: string | null;
     raw_transcript: string | null;
+    duration_seconds: number | null;
+    // AI processed narrative sections
+    formatted_summary: string | null;
+    tasks: string | null;
+    barriers: string | null;
+    interventions: string | null;
+    progress: string | null;
+    // Legacy fields (kept for compatibility)
+    summary: string | null;
+    formatted_note: string | null;
     processed_text: string | null;
+    // Metadata
     tags: string[];
     gps_lat: number | null;
     gps_lng: number | null;
+    location_string: string | null;
     client_name: string | null;
     consumer_hours: number | null;
+    // System fields
+    entry_status: 'draft' | 'submitted' | 'saved';
+    source: 'voice' | 'manual' | 'upload';
     created_at: string;
 }
 

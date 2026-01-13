@@ -205,10 +205,30 @@ export default function CoachDashboardPage() {
 
     const getMoodEmoji = (mood: string) => {
         switch (mood) {
-            case 'good': return '😊';
-            case 'neutral': return '😐';
-            case 'bad': return '😟';
+            case 'good': return '🟢';
+            case 'neutral': return '🟡';
+            case 'bad': return '🔴';
             default: return '📝';
+        }
+    };
+
+    // Smart timestamp formatting
+    const formatSmartTimestamp = (dateStr: string): string => {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const daysDiff = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const time = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+        if (daysDiff === 0) {
+            return `Today ${time}`;
+        } else if (daysDiff === 1) {
+            return `Yesterday ${time}`;
+        } else if (daysDiff < 7) {
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            return `${dayName} ${time}`;
+        } else {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         }
     };
 
@@ -343,25 +363,29 @@ export default function CoachDashboardPage() {
                     <div className={styles.entryList}>
                         {recentEntries.map((entry) => (
                             <div key={entry.id} className={styles.entryItem}>
-                                <div className={styles.entryMoodIcon}>
-                                    {getMoodEmoji(entry.mood)}
-                                </div>
-                                <div className={styles.entryContent}>
-                                    <p className={styles.entryText}>
-                                        {cleanNoteText(entry.summary || entry.processed_text || entry.raw_transcript || '')}
-                                    </p>
-                                    <div className={styles.entryMeta}>
-                                        <span>{new Date(entry.created_at).toLocaleDateString()}</span>
-                                        <span>•</span>
-                                        <span>{new Date(entry.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                        {entry.client_name && (
-                                            <>
-                                                <span>•</span>
-                                                <span className={styles.entryClient}>{entry.client_name}</span>
-                                            </>
-                                        )}
+                                <div className={styles.entryHeader}>
+                                    <div className={styles.entryClientRow}>
+                                        <span className={styles.entryClientName}>
+                                            {entry.client_name || 'General Note'}
+                                        </span>
+                                        <span className={styles.entryTimestamp}>
+                                            {formatSmartTimestamp(entry.created_at)}
+                                        </span>
                                     </div>
+                                    <span className={styles.entryMoodDot} title={entry.mood}>
+                                        {getMoodEmoji(entry.mood)}
+                                    </span>
                                 </div>
+                                <p className={styles.entryText}>
+                                    {cleanNoteText(entry.formatted_summary || entry.summary || entry.processed_text || entry.raw_transcript || '')}
+                                </p>
+                                {entry.tags && entry.tags.length > 0 && (
+                                    <div className={styles.entryTags}>
+                                        {entry.tags.slice(0, 3).map((tag, i) => (
+                                            <span key={i} className={styles.entryTag}>{tag}</span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
