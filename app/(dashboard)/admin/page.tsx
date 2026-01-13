@@ -142,7 +142,9 @@ export default function AdminDashboardPage() {
                     </div>
                 ) : recentCoaches.length === 0 ? (
                     <div className={styles.emptyState}>
-                        <Users size={32} className={styles.emptyIcon} />
+                        <div className={styles.emptyIcon}>
+                            <Users size={28} />
+                        </div>
                         <p className={styles.emptyTitle}>No coaches yet</p>
                         <p className={styles.emptyText}>Invite your first Job Coach to get started</p>
                     </div>
