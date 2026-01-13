@@ -752,8 +752,8 @@
 }
 
 .safetyCloseButton {
-    flex: 3;
-    padding: 14px 24px;
+    width: 100%;
+    padding: 16px 24px;
     background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     color: white;
     border: none;
@@ -772,13 +772,14 @@
 
 .safetyModalActions {
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 16px;
     margin-top: 8px;
 }
 
 .revokeButton {
-    flex: 1;
-    padding: 14px 16px;
+    width: 100%;
+    padding: 12px 16px;
     background: transparent;
     color: #dc2626;
     border: 1px solid #fecaca;
