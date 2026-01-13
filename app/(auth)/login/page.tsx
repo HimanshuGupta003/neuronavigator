@@ -202,7 +202,7 @@ function LoginContent() {
                             <Brain size={36} />
                         </div>
                         <h1 className={styles.mobileLogoText}>
-                            <span className={styles.mobileLogoGradient}>Neuro</span>Navigator
+                            <span className={styles.mobileLogoGradient}>Coach</span>Ally
                         </h1>
                     </div>
 

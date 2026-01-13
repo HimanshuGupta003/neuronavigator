@@ -447,7 +447,7 @@ export default function SetupCredentialsPage() {
                         background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent'
-                    }}>Neuro</span>Navigator
+                    }}>Coach</span>Ally
                 </h1>
                 <p style={{ fontSize: '14px', color: '#737373', marginTop: '6px' }}>
                     AI-Powered Field Reporting

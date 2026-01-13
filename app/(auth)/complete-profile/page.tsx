@@ -90,7 +90,7 @@ export default function CompleteProfilePage() {
                         <Brain size={32} />
                     </div>
                     <h1 className={styles.logoText}>
-                        <span className={styles.logoGradient}>Neuro</span>Navigator
+                        <span className={styles.logoGradient}>Coach</span>Ally
                     </h1>
                 </div>
 

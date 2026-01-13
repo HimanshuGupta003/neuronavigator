@@ -198,7 +198,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         </div>
                         <div className={styles.logoText}>
                             <span className={styles.logoTitle}>
-                                <span className={styles.logoGradient}>Neuro</span>Navigator
+                                <span className={styles.logoGradient}>Coach</span>Ally
                             </span>
                             <span className={styles.roleBadge}>
                                 <Sparkles size={10} />
