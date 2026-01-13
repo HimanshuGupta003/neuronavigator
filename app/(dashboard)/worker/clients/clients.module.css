@@ -417,6 +417,12 @@
     color: #334155;
 }
 
+.required {
+    color: #dc2626;
+    font-weight: 700;
+    margin-left: 2px;
+}
+
 .input {
     height: 52px;
     padding: 0 16px;

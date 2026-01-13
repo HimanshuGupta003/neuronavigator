@@ -11,12 +11,15 @@ interface Client {
     full_name: string;
     uci_number: string | null;
     employer_worksite: string | null;
+    job_site: string | null;
     client_goals: string | null;
     emergency_contact_name: string | null;
     emergency_contact_phone: string | null;
+    emergency_contact_relationship: string | null;
     program_start_date: string | null;
     dor_counselor_name: string | null;
     dor_counselor_phone: string | null;
+    dor_counselor_email: string | null;
     hourly_wage: number | null;
     vendor: string | null;
     // New DR384 fields
@@ -51,12 +54,15 @@ export default function ClientsPage() {
         full_name: '',
         uci_number: '',
         employer_worksite: '',
+        job_site: '',
         client_goals: '',
         emergency_contact_name: '',
         emergency_contact_phone: '',
+        emergency_contact_relationship: '',
         program_start_date: '',
         dor_counselor_name: '',
         dor_counselor_phone: '',
+        dor_counselor_email: '',
         hourly_wage: '',
         vendor: 'v-Enable Pathways',
         // New DR384 fields
@@ -105,12 +111,15 @@ export default function ClientsPage() {
                     full_name: newClient.full_name,
                     uci_number: newClient.uci_number || null,
                     employer_worksite: newClient.employer_worksite || null,
+                    job_site: newClient.job_site || null,
                     client_goals: newClient.client_goals || null,
                     emergency_contact_name: newClient.emergency_contact_name || null,
                     emergency_contact_phone: newClient.emergency_contact_phone || null,
+                    emergency_contact_relationship: newClient.emergency_contact_relationship || null,
                     program_start_date: newClient.program_start_date || null,
                     dor_counselor_name: newClient.dor_counselor_name || null,
                     dor_counselor_phone: newClient.dor_counselor_phone || null,
+                    dor_counselor_email: newClient.dor_counselor_email || null,
                     hourly_wage: newClient.hourly_wage ? parseFloat(newClient.hourly_wage) : null,
                     vendor: newClient.vendor || 'v-Enable Pathways',
                     // New DR384 fields
@@ -131,12 +140,15 @@ export default function ClientsPage() {
                 full_name: '', 
                 uci_number: '', 
                 employer_worksite: '',
+                job_site: '',
                 client_goals: '',
                 emergency_contact_name: '',
                 emergency_contact_phone: '',
+                emergency_contact_relationship: '',
                 program_start_date: '',
                 dor_counselor_name: '',
                 dor_counselor_phone: '',
+                dor_counselor_email: '',
                 hourly_wage: '',
                 vendor: 'v-Enable Pathways',
                 birthdate: '',
@@ -330,7 +342,7 @@ export default function ClientsPage() {
                                 <h3 className={styles.sectionTitle}>Basic Information</h3>
                                 
                                 <div className={styles.inputGroup}>
-                                    <label className={styles.inputLabel}>Full Name *</label>
+                                    <label className={styles.inputLabel}>Full Name <span className={styles.required}>*</span></label>
                                     <input
                                         type="text"
                                         value={newClient.full_name}
@@ -352,15 +364,27 @@ export default function ClientsPage() {
                                     />
                                 </div>
 
-                                <div className={styles.inputGroup}>
-                                    <label className={styles.inputLabel}>Employer / Worksite</label>
-                                    <input
-                                        type="text"
-                                        value={newClient.employer_worksite}
-                                        onChange={(e) => setNewClient({ ...newClient, employer_worksite: e.target.value })}
-                                        placeholder="Enter employer or worksite"
-                                        className={styles.input}
-                                    />
+                                <div className={styles.inputRow}>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Employer</label>
+                                        <input
+                                            type="text"
+                                            value={newClient.employer_worksite}
+                                            onChange={(e) => setNewClient({ ...newClient, employer_worksite: e.target.value })}
+                                            placeholder="Company/Employer name"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label className={styles.inputLabel}>Job Site</label>
+                                        <input
+                                            type="text"
+                                            value={newClient.job_site}
+                                            onChange={(e) => setNewClient({ ...newClient, job_site: e.target.value })}
+                                            placeholder="Work location (if different)"
+                                            className={styles.input}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className={styles.inputGroup}>
@@ -416,15 +440,32 @@ export default function ClientsPage() {
                                         />
                                     </div>
                                     <div className={styles.inputGroup}>
-                                        <label className={styles.inputLabel}>Phone Number</label>
-                                        <input
-                                            type="tel"
-                                            value={newClient.emergency_contact_phone}
-                                            onChange={(e) => setNewClient({ ...newClient, emergency_contact_phone: e.target.value })}
-                                            placeholder="Phone"
+                                        <label className={styles.inputLabel}>Relationship</label>
+                                        <select
+                                            value={newClient.emergency_contact_relationship}
+                                            onChange={(e) => setNewClient({ ...newClient, emergency_contact_relationship: e.target.value })}
                                             className={styles.input}
-                                        />
+                                        >
+                                            <option value="">Select relationship</option>
+                                            <option value="Parent">Parent</option>
+                                            <option value="Sibling">Sibling</option>
+                                            <option value="Spouse">Spouse</option>
+                                            <option value="Friend">Friend</option>
+                                            <option value="Guardian">Guardian</option>
+                                            <option value="Other">Other</option>
+                                        </select>
                                     </div>
+                                </div>
+
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.inputLabel}>Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        value={newClient.emergency_contact_phone}
+                                        onChange={(e) => setNewClient({ ...newClient, emergency_contact_phone: e.target.value })}
+                                        placeholder="Phone number"
+                                        className={styles.input}
+                                    />
                                 </div>
                             </div>
 
@@ -456,6 +497,17 @@ export default function ClientsPage() {
                                             className={styles.input}
                                         />
                                     </div>
+                                </div>
+
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.inputLabel}>Counselor Email</label>
+                                    <input
+                                        type="email"
+                                        value={newClient.dor_counselor_email}
+                                        onChange={(e) => setNewClient({ ...newClient, dor_counselor_email: e.target.value })}
+                                        placeholder="counselor@dor.ca.gov"
+                                        className={styles.input}
+                                    />
                                 </div>
                             </div>
 
