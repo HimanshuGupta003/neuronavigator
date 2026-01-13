@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { FileText, Calendar, Download, User, Clock, Eye, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { FileText, Calendar, Download, User, Clock, Eye, X, ChevronDown } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import styles from './reports.module.css';
 
@@ -20,6 +20,19 @@ export default function WorkerReportsPage() {
     const [generating, setGenerating] = useState(false);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
     const [showPreview, setShowPreview] = useState(false);
+    const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsClientDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         loadClients();
@@ -154,25 +167,45 @@ export default function WorkerReportsPage() {
             </div>
 
             <div className={styles.card}>
-                {/* Client Selector */}
+                {/* Client Selector - Custom Dropdown */}
                 <div className={styles.section}>
                     <label className={styles.sectionLabel}>
                         <User size={18} />
                         Select Client
                     </label>
-                    <select
-                        value={selectedClient}
-                        onChange={(e) => setSelectedClient(e.target.value)}
-                        className={styles.select}
-                        disabled={loading}
+                    <div 
+                        ref={dropdownRef}
+                        className={`${styles.customDropdown} ${isClientDropdownOpen ? styles.dropdownOpen : ''}`}
+                        onClick={() => !loading && setIsClientDropdownOpen(!isClientDropdownOpen)}
                     >
-                        <option value="">Choose a client...</option>
-                        {clients.map((client) => (
-                            <option key={client.id} value={client.id}>
-                                {client.full_name}
-                            </option>
-                        ))}
-                    </select>
+                        <span className={styles.dropdownValue}>
+                            {selectedClient 
+                                ? clients.find(c => c.id === selectedClient)?.full_name 
+                                : 'Choose a client...'}
+                        </span>
+                        <ChevronDown size={18} className={styles.dropdownArrow} />
+                        
+                        {isClientDropdownOpen && (
+                            <div className={styles.dropdownMenu}>
+                                {clients.map((client) => (
+                                    <div 
+                                        key={client.id}
+                                        className={`${styles.dropdownOption} ${selectedClient === client.id ? styles.optionSelected : ''}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedClient(client.id);
+                                            setIsClientDropdownOpen(false);
+                                        }}
+                                    >
+                                        <div className={styles.optionAvatar}>
+                                            {client.full_name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <span>{client.full_name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Date Range */}

@@ -192,6 +192,26 @@ export default function CoachDashboardPage() {
         }
     };
 
+    // Helper to strip markdown and clean text for display
+    const cleanNoteText = (text: string): string => {
+        if (!text) return 'No content available';
+        return text
+            .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove **bold**
+            .replace(/\*([^*]+)\*/g, '$1')     // Remove *italic*
+            .replace(/#{1,6}\s?/g, '')         // Remove headers
+            .replace(/\n+/g, ' ')              // Replace newlines with space
+            .trim();
+    };
+
+    const getMoodEmoji = (mood: string) => {
+        switch (mood) {
+            case 'good': return '😊';
+            case 'neutral': return '😐';
+            case 'bad': return '😟';
+            default: return '📝';
+        }
+    };
+
     return (
         <div className={styles.container}>
             {/* Page Header */}
@@ -323,13 +343,12 @@ export default function CoachDashboardPage() {
                     <div className={styles.entryList}>
                         {recentEntries.map((entry) => (
                             <div key={entry.id} className={styles.entryItem}>
-                                <div
-                                    className={styles.entryStatus}
-                                    style={{ backgroundColor: getStatusColor(entry.status) }}
-                                ></div>
+                                <div className={styles.entryMoodIcon}>
+                                    {getMoodEmoji(entry.mood)}
+                                </div>
                                 <div className={styles.entryContent}>
                                     <p className={styles.entryText}>
-                                        {entry.processed_text || entry.raw_transcript || 'No transcript available'}
+                                        {cleanNoteText(entry.summary || entry.processed_text || entry.raw_transcript || '')}
                                     </p>
                                     <div className={styles.entryMeta}>
                                         <span>{new Date(entry.created_at).toLocaleDateString()}</span>

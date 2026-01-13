@@ -39,6 +39,9 @@ export interface Entry {
     worker_id: string;
     shift_id: string | null;
     status: SiteStatus;
+    mood: string;
+    summary: string | null;
+    formatted_note: string | null;
     audio_url: string | null;
     raw_transcript: string | null;
     processed_text: string | null;
@@ -46,6 +49,7 @@ export interface Entry {
     gps_lat: number | null;
     gps_lng: number | null;
     client_name: string | null;
+    consumer_hours: number | null;
     created_at: string;
 }
 

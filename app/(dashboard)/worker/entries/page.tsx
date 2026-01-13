@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ClipboardList, Calendar, User, ChevronDown, Smile, Meh, Frown } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import styles from './entries.module.css';
@@ -27,6 +27,19 @@ export default function WorkerEntriesPage() {
     const [clients, setClients] = useState<Client[]>([]);
     const [selectedClient, setSelectedClient] = useState<string>('');
     const [loading, setLoading] = useState(true);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         loadClients();
@@ -121,23 +134,52 @@ export default function WorkerEntriesPage() {
                 <p className={styles.subtitle}>View all your field log entries</p>
             </div>
 
-            {/* Filters */}
+            {/* Custom Dropdown */}
             <div className={styles.filters}>
-                <div className={styles.filterGroup}>
-                    <User size={16} />
-                    <select
-                        value={selectedClient}
-                        onChange={(e) => setSelectedClient(e.target.value)}
-                        className={styles.filterSelect}
-                    >
-                        <option value="">All Clients</option>
-                        {clients.map((client) => (
-                            <option key={client.id} value={client.id}>
-                                {client.full_name}
-                            </option>
-                        ))}
-                    </select>
-                    <ChevronDown size={16} className={styles.selectArrow} />
+                <div 
+                    ref={dropdownRef}
+                    className={`${styles.customDropdown} ${isDropdownOpen ? styles.dropdownOpen : ''}`}
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                    <User size={18} className={styles.dropdownIcon} />
+                    <span className={styles.dropdownValue}>
+                        {selectedClient 
+                            ? clients.find(c => c.id === selectedClient)?.full_name 
+                            : 'All Clients'}
+                    </span>
+                    <ChevronDown size={18} className={styles.dropdownArrow} />
+                    
+                    {isDropdownOpen && (
+                        <div className={styles.dropdownMenu}>
+                            <div 
+                                className={`${styles.dropdownOption} ${!selectedClient ? styles.optionSelected : ''}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedClient('');
+                                    setIsDropdownOpen(false);
+                                }}
+                            >
+                                <div className={styles.optionAvatar}>👥</div>
+                                <span>All Clients</span>
+                            </div>
+                            {clients.map((client) => (
+                                <div 
+                                    key={client.id}
+                                    className={`${styles.dropdownOption} ${selectedClient === client.id ? styles.optionSelected : ''}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedClient(client.id);
+                                        setIsDropdownOpen(false);
+                                    }}
+                                >
+                                    <div className={styles.optionAvatar}>
+                                        {client.full_name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span>{client.full_name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
