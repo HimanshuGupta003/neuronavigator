@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { createClient as createClientServer } from '@/lib/supabase/server';
 
 export async function GET() {
@@ -30,7 +29,7 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
-        // Now fetch all workers using service role (bypasses RLS)
+        // Fetch all workers using service role (bypasses RLS)
         const { data: coaches, error: coachesError } = await adminClient
             .from('profiles')
             .select('*')
@@ -41,9 +40,42 @@ export async function GET() {
             return NextResponse.json({ error: coachesError.message }, { status: 500 });
         }
 
+        // Enrich coaches with activity stats
+        const enrichedCoaches = await Promise.all(
+            (coaches || []).map(async (coach) => {
+                // Get client count
+                const { count: clientCount } = await adminClient
+                    .from('clients')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('coach_id', coach.id);
+
+                // Get entries count
+                const { count: entriesCount } = await adminClient
+                    .from('entries')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('worker_id', coach.id);
+
+                // Get last entry date
+                const { data: lastEntry } = await adminClient
+                    .from('entries')
+                    .select('created_at')
+                    .eq('worker_id', coach.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                return {
+                    ...coach,
+                    client_count: clientCount || 0,
+                    entries_count: entriesCount || 0,
+                    last_active: lastEntry?.created_at || null,
+                };
+            })
+        );
+
         return NextResponse.json({ 
-            coaches: coaches || [],
-            count: coaches?.length || 0
+            coaches: enrichedCoaches,
+            count: enrichedCoaches.length
         });
     } catch (error) {
         console.error('Error fetching coaches:', error);

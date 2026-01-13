@@ -54,6 +54,46 @@
     gap: 16px;
 }
 
+.formFields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.inputLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.textInput {
+    height: 52px;
+    padding: 0 18px;
+    font-size: 15px;
+    color: #1e293b;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.textInput::placeholder {
+    color: #94a3b8;
+}
+
+.textInput:focus {
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+    background: #ffffff;
+}
+
 .formRow {
     display: flex;
     gap: 12px;

@@ -2,14 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Users, Search, Clock, UserPlus } from 'lucide-react';
+import { Users, Search, Clock, UserPlus, FileText } from 'lucide-react';
 import { Profile } from '@/lib/types';
 import Link from 'next/link';
 import styles from './workers.module.css';
 
+interface CoachWithStats extends Profile {
+    client_count: number;
+    entries_count: number;
+    last_active: string | null;
+}
+
 export default function JobCoachesPage() {
     const supabase = createClient();
-    const [coaches, setCoaches] = useState<Profile[]>([]);
+    const [coaches, setCoaches] = useState<CoachWithStats[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
 
@@ -23,7 +29,7 @@ export default function JobCoachesPage() {
             const data = await response.json();
             
             if (response.ok) {
-                setCoaches(data.coaches as Profile[]);
+                setCoaches(data.coaches as CoachWithStats[]);
             } else {
                 console.error('Failed to load coaches:', data.error);
             }
@@ -99,10 +105,23 @@ export default function JobCoachesPage() {
                                     </p>
                                     <p className={styles.coachEmail}>{coach.email}</p>
                                 </div>
+                                <div className={styles.coachStats}>
+                                    <span className={styles.statItem}>
+                                        <Users size={14} />
+                                        {coach.client_count} clients
+                                    </span>
+                                    <span className={styles.statItem}>
+                                        <FileText size={14} />
+                                        {coach.entries_count} notes
+                                    </span>
+                                </div>
                                 <div className={styles.coachMeta}>
                                     <span className={styles.coachDate}>
                                         <Clock size={14} />
-                                        Joined {new Date(coach.created_at).toLocaleDateString()}
+                                        {coach.last_active 
+                                            ? `Active ${new Date(coach.last_active).toLocaleDateString()}`
+                                            : `Joined ${new Date(coach.created_at).toLocaleDateString()}`
+                                        }
                                     </span>
                                 </div>
                             </div>

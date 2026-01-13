@@ -17,6 +17,7 @@ export interface Invitation {
     email: string;
     token: string;
     invited_by: string;
+    invited_name: string | null;
     expires_at: string;
     used_at: string | null;
     created_at: string;

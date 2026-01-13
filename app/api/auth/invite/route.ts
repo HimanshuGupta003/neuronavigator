@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { email } = await request.json();
+        const { email, name } = await request.json();
 
         if (!email) {
             return NextResponse.json(
@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
                 .update({
                     token,
                     expires_at: expiresAt.toISOString(),
+                    invited_name: name || null,
                 })
                 .eq('id', existingInvitation.id);
         } else {
@@ -87,6 +88,7 @@ export async function POST(request: NextRequest) {
                     token,
                     invited_by: user.id,
                     expires_at: expiresAt.toISOString(),
+                    invited_name: name || null,
                 });
 
             if (insertError) {

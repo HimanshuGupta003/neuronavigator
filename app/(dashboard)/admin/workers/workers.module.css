@@ -228,6 +228,23 @@
     white-space: nowrap;
 }
 
+.coachStats {
+    display: flex;
+    gap: 16px;
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #64748b;
+    background: #ffffff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
 .coachMeta {
     text-align: right;
 }
