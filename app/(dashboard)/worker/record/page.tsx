@@ -47,6 +47,14 @@ export default function RecordNotePage() {
     const [error, setError] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [consumerHours, setConsumerHours] = useState<string>('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    
+    // Waveform visualization refs
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const analyserRef = useRef<AnalyserNode | null>(null);
+    const animationFrameRef = useRef<number | null>(null);
+    const [waveformBars, setWaveformBars] = useState<number[]>(new Array(20).fill(0));
 
     useEffect(() => {
         loadClients();
@@ -57,6 +65,17 @@ export default function RecordNotePage() {
                 URL.revokeObjectURL(audioUrl);
             }
         };
+    }, []);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     async function loadClients() {
@@ -94,6 +113,49 @@ export default function RecordNotePage() {
             mediaRecorderRef.current = mediaRecorder;
             audioChunksRef.current = [];
             
+            // Setup audio context for waveform visualization
+            const audioContext = new AudioContext();
+            const analyser = audioContext.createAnalyser();
+            const source = audioContext.createMediaStreamSource(stream);
+            source.connect(analyser);
+            analyser.fftSize = 512; // Higher resolution
+            analyser.smoothingTimeConstant = 0.3; // Smoother animation
+            
+            audioContextRef.current = audioContext;
+            analyserRef.current = analyser;
+            
+            // Calculate waveform bars for visualization
+            const updateWaveform = () => {
+                if (!analyserRef.current) return;
+                
+                const bufferLength = analyserRef.current.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                // Use time domain data for waveform
+                analyserRef.current.getByteTimeDomainData(dataArray);
+                
+                // Sample 20 bars evenly distributed
+                const barsCount = 20;
+                const step = Math.floor(bufferLength / barsCount);
+                const bars: number[] = [];
+                
+                for (let i = 0; i < barsCount; i++) {
+                    // Get max deviation in a range for each bar
+                    let maxDeviation = 0;
+                    for (let j = 0; j < step; j++) {
+                        const value = dataArray[i * step + j];
+                        const deviation = Math.abs(value - 128) / 128;
+                        maxDeviation = Math.max(maxDeviation, deviation);
+                    }
+                    // Amplify by 5x for better sensitivity to speech
+                    bars.push(Math.min(1, maxDeviation * 5));
+                }
+                
+                setWaveformBars(bars);
+                animationFrameRef.current = requestAnimationFrame(updateWaveform);
+            };
+            
+            updateWaveform();
+            
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
                     audioChunksRef.current.push(event.data);
@@ -102,6 +164,14 @@ export default function RecordNotePage() {
             
             mediaRecorder.onstop = () => {
                 stream.getTracks().forEach(track => track.stop());
+                
+                // Cleanup waveform animation
+                if (animationFrameRef.current) {
+                    cancelAnimationFrame(animationFrameRef.current);
+                }
+                if (audioContextRef.current) {
+                    audioContextRef.current.close();
+                }
                 
                 // Create audio blob for playback
                 const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
@@ -389,19 +459,55 @@ export default function RecordNotePage() {
                         <User size={16} />
                         Select Client
                     </label>
-                    <select
-                        value={selectedClient}
-                        onChange={(e) => setSelectedClient(e.target.value)}
-                        className={styles.clientSelect}
-                        disabled={loading || processingStep !== 'idle'}
-                    >
-                        <option value="">Choose a client...</option>
-                        {clients.map((client) => (
-                            <option key={client.id} value={client.id}>
-                                {client.full_name}
-                            </option>
-                        ))}
-                    </select>
+                    <div className={styles.customDropdown} ref={dropdownRef}>
+                        <button
+                            type="button"
+                            className={`${styles.dropdownTrigger} ${isDropdownOpen ? styles.dropdownOpen : ''}`}
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            disabled={loading || processingStep !== 'idle'}
+                        >
+                            <span className={styles.dropdownValue}>
+                                {selectedClient 
+                                    ? clients.find(c => c.id === selectedClient)?.full_name 
+                                    : 'Choose a client...'}
+                            </span>
+                            <svg 
+                                className={`${styles.dropdownArrow} ${isDropdownOpen ? styles.arrowUp : ''}`}
+                                width="20" 
+                                height="20" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="2.5"
+                            >
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        {isDropdownOpen && (
+                            <div className={styles.dropdownMenu}>
+                                <div 
+                                    className={`${styles.dropdownItem} ${!selectedClient ? styles.dropdownItemSelected : ''}`}
+                                    onClick={() => { setSelectedClient(''); setIsDropdownOpen(false); }}
+                                >
+                                    <span className={styles.itemIcon}>👤</span>
+                                    Choose a client...
+                                </div>
+                                {clients.map((client) => (
+                                    <div 
+                                        key={client.id}
+                                        className={`${styles.dropdownItem} ${selectedClient === client.id ? styles.dropdownItemSelected : ''}`}
+                                        onClick={() => { setSelectedClient(client.id); setIsDropdownOpen(false); }}
+                                    >
+                                        <span className={styles.itemIcon}>👤</span>
+                                        {client.full_name}
+                                        {selectedClient === client.id && (
+                                            <span className={styles.checkIcon}>✓</span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     {clients.length === 0 && !loading && (
                         <p className={styles.noClients}>No clients yet. Add a client first.</p>
                     )}
@@ -430,18 +536,36 @@ export default function RecordNotePage() {
                 {/* Record Button - only show when idle or recording */}
                 {(processingStep === 'idle' || processingStep === 'recording') && (
                     <div className={styles.recordSection}>
-                        <button
-                            className={`${styles.recordButton} ${isRecording ? styles.recordButtonRecording : styles.recordButtonIdle}`}
-                            onClick={handleRecordToggle}
-                            disabled={!canRecord && !isRecording}
-                            style={{ opacity: (canRecord || isRecording) ? 1 : 0.5 }}
-                        >
-                            {isRecording ? (
-                                <MicOff size={48} className={styles.recordIcon} />
-                            ) : (
-                                <Mic size={48} className={styles.recordIcon} />
-                            )}
-                        </button>
+                        {/* WhatsApp-style Waveform Visualization */}
+                        {isRecording && (
+                            <div className={styles.waveformContainer}>
+                                {waveformBars.map((height, index) => (
+                                    <div 
+                                        key={index}
+                                        className={styles.waveformBar}
+                                        style={{ 
+                                            height: `${Math.max(4, height * 40)}px`,
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                        
+                        {/* Record Button */}
+                        <div className={styles.recordButtonWrapper}>
+                            <button
+                                className={`${styles.recordButton} ${isRecording ? styles.recordButtonRecording : styles.recordButtonIdle}`}
+                                onClick={handleRecordToggle}
+                                disabled={!canRecord && !isRecording}
+                                style={{ opacity: (canRecord || isRecording) ? 1 : 0.5 }}
+                            >
+                                {isRecording ? (
+                                    <MicOff size={48} className={styles.recordIcon} />
+                                ) : (
+                                    <Mic size={48} className={styles.recordIcon} />
+                                )}
+                            </button>
+                        </div>
                         {isRecording && (
                             <p className={styles.recordingTime}>{formatTime(recordingTime)}</p>
                         )}
@@ -543,11 +667,30 @@ export default function RecordNotePage() {
                                 value={formattedNote}
                                 onChange={(e) => setFormattedNote(e.target.value)}
                                 className={styles.transcriptTextarea}
-                                rows={6}
+                                rows={12}
                             />
                         ) : (
-                            <div className={styles.transcriptBox}>
-                                <p className={styles.transcriptText}>{formattedNote}</p>
+                            <div className={styles.formattedNoteContainer}>
+                                {formattedNote.split('**').filter(Boolean).map((section, index) => {
+                                    // Parse sections: odd indices are headers, even are content
+                                    if (index % 2 === 0) {
+                                        // This is a header
+                                        const headerText = section.replace(/[:*]/g, '').trim();
+                                        if (!headerText) return null;
+                                        return (
+                                            <div key={index} className={styles.noteSection}>
+                                                <h4 className={styles.noteSectionHeader}>{headerText}</h4>
+                                            </div>
+                                        );
+                                    } else {
+                                        // This is content after a header
+                                        const content = section.trim();
+                                        if (!content) return null;
+                                        return (
+                                            <p key={index} className={styles.noteSectionContent}>{content}</p>
+                                        );
+                                    }
+                                })}
                             </div>
                         )}
                         
