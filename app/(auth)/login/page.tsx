@@ -271,6 +271,19 @@ function LoginContent() {
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
+                                <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                                    <a
+                                        href="/forgot-password"
+                                        style={{
+                                            color: '#0284c7',
+                                            textDecoration: 'none',
+                                            fontSize: '14px',
+                                            fontWeight: '500'
+                                        }}
+                                    >
+                                        Forgot password?
+                                    </a>
+                                </div>
                             </div>
 
                             {/* Error Message - Login errors */}
