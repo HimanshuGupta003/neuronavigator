@@ -207,6 +207,11 @@
     flex-shrink: 0;
 }
 
+.moodEmoji {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
 /* Entry Summary */
 .entrySummary {
     font-size: 14px;

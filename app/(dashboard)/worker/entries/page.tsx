@@ -12,7 +12,8 @@ interface Entry {
     formatted_summary: string | null;
     summary: string;
     processed_text: string | null;
-    mood: string;
+    mood: string;  // For backwards compat
+    status: string;  // 'green', 'yellow', 'red'
     tags: string[];
     consumer_hours: number | null;
     created_at: string;
@@ -149,12 +150,19 @@ export default function WorkerEntriesPage() {
         }
     }
 
-    // Colored mood dots
-    const getMoodDot = (mood: string) => {
-        switch (mood) {
-            case 'good': return <span className={styles.moodDot} title="Good">🟢</span>;
-            case 'bad': return <span className={styles.moodDot} title="Needs Attention">🔴</span>;
-            default: return <span className={styles.moodDot} title="Neutral">🟡</span>;
+    // Mood emojis - matches record page styling
+    const getMoodEmoji = (status: string) => {
+        switch (status) {
+            case 'green':
+            case 'good':
+                return <span className={styles.moodEmoji} title="Good">😊</span>;
+            case 'red':
+            case 'bad':
+                return <span className={styles.moodEmoji} title="Needs Attention">😟</span>;
+            case 'yellow':
+            case 'neutral':
+            default:
+                return <span className={styles.moodEmoji} title="Neutral">😐</span>;
         }
     };
 
@@ -336,7 +344,7 @@ export default function WorkerEntriesPage() {
                                     <span className={styles.clientName}>{entry.client_name || 'General Note'}</span>
                                     <span className={styles.entryTimestamp}>— {formatSmartTimestamp(entry.created_at)}</span>
                                 </div>
-                                {getMoodDot(entry.mood)}
+                            {getMoodEmoji(entry.status || entry.mood)}
                             </div>
                             
                             {/* AI Formatted Summary */}
@@ -370,7 +378,7 @@ export default function WorkerEntriesPage() {
                             <div>
                                 <h2 className={styles.modalTitle}>{selectedEntry.client_name || 'General Note'}</h2>
                                 <p className={styles.modalSubtitle}>
-                                    {formatSmartTimestamp(selectedEntry.created_at)} {getMoodDot(selectedEntry.mood)}
+                                    {formatSmartTimestamp(selectedEntry.created_at)} {getMoodEmoji(selectedEntry.status || selectedEntry.mood)}
                                 </p>
                             </div>
                             <button className={styles.modalClose} onClick={() => setSelectedEntry(null)}>×</button>
