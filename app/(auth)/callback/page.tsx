@@ -18,9 +18,11 @@ function CallbackContent() {
     async function handleAuthCallback() {
         try {
             // Check for hash fragment (Supabase puts tokens in hash)
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const hash = window.location.hash;
+            const hashParams = new URLSearchParams(hash.substring(1));
             const accessToken = hashParams.get('access_token');
             const refreshToken = hashParams.get('refresh_token');
+            const tokenType = hashParams.get('type');
 
             // Also check query params
             const error = searchParams.get('error');
@@ -29,6 +31,14 @@ function CallbackContent() {
             if (error) {
                 setStatus(`Error: ${errorDescription || error}`);
                 setTimeout(() => router.push('/login'), 3000);
+                return;
+            }
+
+            // If this is a password recovery flow, redirect to reset-password page
+            if (tokenType === 'recovery' && accessToken && refreshToken) {
+                setStatus('Redirecting to password reset...');
+                // Redirect to reset-password page with the hash intact
+                window.location.href = `/reset-password${hash}`;
                 return;
             }
 
