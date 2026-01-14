@@ -11,6 +11,7 @@ interface Client {
     id: string;
     full_name: string;
     client_goals: string | null;
+    ipe_goal: string | null;  // IPE Goal for DOR compliance
 }
 
 type ProcessingStep = 'idle' | 'recording' | 'recorded' | 'transcribing' | 'formatting' | 'ready' | 'saving' | 'saved';
@@ -84,7 +85,7 @@ export default function RecordNotePage() {
             if (user) {
                 const { data } = await supabase
                     .from('clients')
-                    .select('id, full_name, client_goals')
+                    .select('id, full_name, client_goals, ipe_goal')
                     .eq('coach_id', user.id)
                     .order('full_name');
 
@@ -288,6 +289,7 @@ export default function RecordNotePage() {
                     transcript: transcribeData.transcript,
                     clientName: selectedClientData?.full_name || 'Client',
                     clientGoals: selectedClientData?.client_goals || '',
+                    ipeGoal: selectedClientData?.ipe_goal || '',  // Pass IPE Goal for DOR compliance
                     mood: selectedMood,
                 }),
             });

@@ -11,6 +11,7 @@ interface Entry {
     formatted_note: string;
     formatted_summary: string | null;
     summary: string;
+    processed_text: string | null;
     mood: string;
     tags: string[];
     consumer_hours: number | null;
@@ -186,6 +187,41 @@ export default function WorkerEntriesPage() {
         }
     };
 
+    // Helper to strip markdown and section headers for clean card display
+    const cleanNoteText = (text: string): string => {
+        if (!text) return 'No content available';
+        return text
+            // Remove section headers (with or without ** markers)
+            .replace(/\*?\*?Tasks?\s*&?\s*Productivity:?\*?\*?/gi, '')
+            .replace(/\*?\*?Barriers?\s*&?\s*Behaviors?:?\*?\*?/gi, '')
+            .replace(/\*?\*?Interventions?:?\*?\*?/gi, '')
+            .replace(/\*?\*?Progress\s*(?:on\s*)?Goals?:?\*?\*?/gi, '')
+            // Remove **bold** markers
+            .replace(/\*\*([^*]+)\*\*/g, '$1')
+            // Remove *italic* markers
+            .replace(/\*([^*]+)\*/g, '$1')
+            // Remove markdown headers
+            .replace(/#{1,6}\s?/g, '')
+            // Replace newlines with space and normalize whitespace
+            .replace(/\n+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .substring(0, 180);
+    };
+
+    // Get display summary for entry card
+    const getCardSummary = (entry: Entry): string => {
+        // If we have the AI-generated short summary, show it fully (no truncation)
+        if (entry.formatted_summary) {
+            return entry.formatted_summary;
+        }
+        
+        // For fallback text, clean and truncate
+        const text = entry.summary || entry.processed_text || entry.formatted_note || entry.raw_transcript || '';
+        const cleaned = cleanNoteText(text);
+        return cleaned.length > 150 ? cleaned.substring(0, 150) + '...' : cleaned;
+    };
+
     return (
         <div className={styles.container}>
             {/* Header */}
@@ -303,9 +339,9 @@ export default function WorkerEntriesPage() {
                                 {getMoodDot(entry.mood)}
                             </div>
                             
-                            {/* Summary */}
+                            {/* AI Formatted Summary */}
                             <p className={styles.entrySummary}>
-                                "{entry.formatted_summary || entry.summary || 'No summary available'}"
+                                {getCardSummary(entry)}
                             </p>
 
                             {/* Tags */}
@@ -341,87 +377,187 @@ export default function WorkerEntriesPage() {
                         </div>
 
                         <div className={styles.modalBody}>
-                            {/* AI Narrative Sections */}
-                            {selectedEntry.tasks && (
-                                <div className={styles.narrativeSection}>
-                                    <h3>📋 Tasks & Productivity</h3>
-                                    <p>{selectedEntry.tasks}</p>
+                            {/* 1. AI Formatted Note - Always First */}
+                            <div className={styles.formattedNoteCard}>
+                                <div className={styles.formattedNoteHeader}>
+                                    <span className={styles.formattedNoteIcon}>✨</span>
+                                    <h3>AI Formatted Note</h3>
                                 </div>
-                            )}
+                                <div className={styles.formattedNoteContent}>
+                                    {(() => {
+                                        // Use formatted_note (primary) or processed_text (backwards compat) as fallback
+                                        const noteText = selectedEntry.formatted_note || selectedEntry.processed_text || '';
+                                        
+                                        if (!noteText) {
+                                            return <p>{selectedEntry.summary || 'No AI formatted note available.'}</p>;
+                                        }
 
-                            {selectedEntry.barriers && (
-                                <div className={styles.narrativeSection}>
-                                    <h3>⚠️ Barriers & Behaviors</h3>
-                                    <p>{selectedEntry.barriers}</p>
+                                        // Check if note has ** markers (markdown format)
+                                        if (noteText.includes('**')) {
+                                            return (
+                                                <div className={styles.noteSectionsContainer}>
+                                                    {noteText.split('**').filter(Boolean).map((section, index) => {
+                                                        if (index % 2 === 0) {
+                                                            const headerText = section.replace(/[:*]/g, '').trim();
+                                                            if (!headerText) return null;
+                                                            
+                                                            let headerClass = styles.tasksHeader;
+                                                            let icon = '📋';
+                                                            if (headerText.toLowerCase().includes('barrier') || headerText.toLowerCase().includes('behavior')) {
+                                                                headerClass = styles.barriersHeader;
+                                                                icon = '⚠️';
+                                                            } else if (headerText.toLowerCase().includes('intervention')) {
+                                                                headerClass = styles.interventionsHeader;
+                                                                icon = '🛠️';
+                                                            } else if (headerText.toLowerCase().includes('progress') || headerText.toLowerCase().includes('goal')) {
+                                                                headerClass = styles.progressHeader;
+                                                                icon = '📈';
+                                                            }
+                                                            
+                                                            return (
+                                                                <div key={index} className={`${styles.noteSection} ${headerClass}`}>
+                                                                    <h4 className={styles.noteSectionHeader}>{icon} {headerText.toUpperCase()}</h4>
+                                                                </div>
+                                                            );
+                                                        } else {
+                                                            const content = section.trim();
+                                                            if (!content) return null;
+                                                            return <p key={index} className={styles.noteSectionContent}>{content}</p>;
+                                                        }
+                                                    })}
+                                                </div>
+                                            );
+                                        }
+
+                                        // No ** markers - parse by header patterns
+                                        const headerPatterns = [
+                                            { pattern: /Tasks?\s*&?\s*Productivity:?/gi, icon: '📋', class: styles.tasksHeader, label: 'TASKS & PRODUCTIVITY' },
+                                            { pattern: /Barriers?\s*&?\s*Behaviors?:?/gi, icon: '⚠️', class: styles.barriersHeader, label: 'BARRIERS & BEHAVIORS' },
+                                            { pattern: /Interventions?:?/gi, icon: '🛠️', class: styles.interventionsHeader, label: 'INTERVENTIONS' },
+                                            { pattern: /Progress\s*(?:on\s*)?Goals?:?/gi, icon: '📈', class: styles.progressHeader, label: 'PROGRESS ON GOALS' },
+                                        ];
+
+                                        // Split by any header pattern
+                                        const allPatterns = headerPatterns.map(h => h.pattern.source).join('|');
+                                        const splitRegex = new RegExp(`(${allPatterns})`, 'gi');
+                                        const parts = noteText.split(splitRegex).filter(Boolean);
+
+                                        return (
+                                            <div className={styles.noteSectionsContainer}>
+                                                {parts.map((part, index) => {
+                                                    const trimmed = part.trim();
+                                                    if (!trimmed) return null;
+                                                    
+                                                    // Check if this part is a header
+                                                    const matchedHeader = headerPatterns.find(h => h.pattern.test(trimmed));
+                                                    if (matchedHeader) {
+                                                        // Reset regex lastIndex
+                                                        matchedHeader.pattern.lastIndex = 0;
+                                                        return (
+                                                            <div key={index} className={`${styles.noteSection} ${matchedHeader.class}`}>
+                                                                <h4 className={styles.noteSectionHeader}>{matchedHeader.icon} {matchedHeader.label}</h4>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    
+                                                    // This is content
+                                                    return <p key={index} className={styles.noteSectionContent}>{trimmed}</p>;
+                                                })}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
-                            )}
+                                {selectedEntry.consumer_hours && (
+                                    <div className={styles.hoursChip}>
+                                        🕐 {selectedEntry.consumer_hours} consumer hours
+                                    </div>
+                                )}
+                            </div>
 
-                            {selectedEntry.interventions && (
-                                <div className={styles.narrativeSection}>
-                                    <h3>🛠️ Interventions</h3>
-                                    <p>{selectedEntry.interventions}</p>
-                                </div>
-                            )}
-
-                            {selectedEntry.progress && (
-                                <div className={styles.narrativeSection}>
-                                    <h3>📈 Progress on Goals</h3>
-                                    <p>{selectedEntry.progress}</p>
-                                </div>
-                            )}
-
-                            {/* Summary fallback if no narrative sections */}
-                            {!selectedEntry.tasks && !selectedEntry.barriers && !selectedEntry.interventions && !selectedEntry.progress && (
-                                <div className={styles.narrativeSection}>
-                                    <h3>📝 Summary</h3>
-                                    <p>{selectedEntry.formatted_summary || selectedEntry.summary || 'No summary available'}</p>
-                                </div>
-                            )}
-
-                            {/* Consumer Hours */}
-                            {selectedEntry.consumer_hours && (
-                                <div className={styles.metaItem}>
-                                    <strong>Consumer Hours:</strong> {selectedEntry.consumer_hours}
-                                </div>
-                            )}
-
-                            {/* Original Transcript */}
+                            {/* 2. Original Transcript */}
                             {selectedEntry.raw_transcript && (
-                                <div className={styles.narrativeSection}>
-                                    <h3>🎙️ Original Transcript</h3>
-                                    <p className={styles.transcript}>{selectedEntry.raw_transcript}</p>
+                                <div className={styles.transcriptCard}>
+                                    <div className={styles.transcriptHeader}>
+                                        <span className={styles.transcriptIcon}>🎙️</span>
+                                        <h3>Original Transcript</h3>
+                                    </div>
+                                    <p className={styles.transcriptText}>{selectedEntry.raw_transcript}</p>
                                 </div>
                             )}
 
-                            {/* Audio Playback */}
+                            {/* 3. Audio Playback */}
                             {selectedEntry.audio_url && (
-                                <div className={styles.audioSection}>
-                                    <h3>🔊 Audio Recording</h3>
+                                <div className={styles.audioCard}>
+                                    <h4>🔊 Audio Recording</h4>
                                     <audio controls src={selectedEntry.audio_url} className={styles.audioPlayer}>
                                         Your browser does not support the audio element.
                                     </audio>
                                 </div>
                             )}
 
+                            {/* 4. Narrative Headers Grid - Beautified */}
+                            {(selectedEntry.tasks || selectedEntry.barriers || selectedEntry.interventions || selectedEntry.progress) && (
+                                <div className={styles.narrativeGrid}>
+                                    <h3 className={styles.narrativeGridTitle}>📄 Detailed Documentation</h3>
+                                    <div className={styles.narrativeCards}>
+                                        {selectedEntry.tasks && (
+                                            <div className={`${styles.narrativeCard} ${styles.tasksCard}`}>
+                                                <div className={styles.narrativeCardHeader}>
+                                                    <span className={styles.narrativeIcon}>📋</span>
+                                                    <h4>Tasks & Productivity</h4>
+                                                </div>
+                                                <p>{selectedEntry.tasks}</p>
+                                            </div>
+                                        )}
+                                        {selectedEntry.barriers && (
+                                            <div className={`${styles.narrativeCard} ${styles.barriersCard}`}>
+                                                <div className={styles.narrativeCardHeader}>
+                                                    <span className={styles.narrativeIcon}>⚠️</span>
+                                                    <h4>Barriers & Behaviors</h4>
+                                                </div>
+                                                <p>{selectedEntry.barriers}</p>
+                                            </div>
+                                        )}
+                                        {selectedEntry.interventions && (
+                                            <div className={`${styles.narrativeCard} ${styles.interventionsCard}`}>
+                                                <div className={styles.narrativeCardHeader}>
+                                                    <span className={styles.narrativeIcon}>🛠️</span>
+                                                    <h4>Interventions</h4>
+                                                </div>
+                                                <p>{selectedEntry.interventions}</p>
+                                            </div>
+                                        )}
+                                        {selectedEntry.progress && (
+                                            <div className={`${styles.narrativeCard} ${styles.progressCard}`}>
+                                                <div className={styles.narrativeCardHeader}>
+                                                    <span className={styles.narrativeIcon}>📈</span>
+                                                    <h4>Progress on Goals</h4>
+                                                </div>
+                                                <p>{selectedEntry.progress}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Tags */}
                             {selectedEntry.tags && selectedEntry.tags.length > 0 && (
                                 <div className={styles.modalTags}>
-                                    <strong>Tags:</strong>
                                     {selectedEntry.tags.map((tag, i) => (
                                         <span key={i} className={styles.tag}>{tag}</span>
                                     ))}
                                 </div>
                             )}
 
-                            {/* Metadata */}
-                            <div className={styles.metadataSection}>
+                            {/* Metadata Footer */}
+                            <div className={styles.metadataFooter}>
                                 {selectedEntry.location_string && (
-                                    <div className={styles.metaItem}>📍 {selectedEntry.location_string}</div>
+                                    <span className={styles.metaChip}>📍 {selectedEntry.location_string}</span>
                                 )}
                                 {selectedEntry.gps_lat && selectedEntry.gps_lng && !selectedEntry.location_string && (
-                                    <div className={styles.metaItem}>
+                                    <span className={styles.metaChip}>
                                         📍 {selectedEntry.gps_lat.toFixed(4)}, {selectedEntry.gps_lng.toFixed(4)}
-                                    </div>
+                                    </span>
                                 )}
                             </div>
                         </div>

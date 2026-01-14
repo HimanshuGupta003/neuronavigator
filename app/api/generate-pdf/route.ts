@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
         doc.setFont('helvetica', 'bold');
         doc.text('UCI #:', 110, yPos);
         doc.setFont('helvetica', 'normal');
-        doc.text(client.uci || 'N/A', 130, yPos);
+        doc.text(client.uci_number || 'N/A', 130, yPos);
         yPos += 8;
 
         doc.setFont('helvetica', 'bold');
@@ -102,13 +102,19 @@ export async function GET(request: NextRequest) {
         doc.setFont('helvetica', 'bold');
         doc.text('Job Site:', 110, yPos);
         doc.setFont('helvetica', 'normal');
-        doc.text(client.job_title || 'N/A', 140, yPos);
+        doc.text(client.job_site || client.job_title || 'N/A', 135, yPos);
         yPos += 8;
 
         doc.setFont('helvetica', 'bold');
         doc.text('SE Provider:', 20, yPos);
         doc.setFont('helvetica', 'normal');
         doc.text(client.se_service_provider || 'N/A', 55, yPos);
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text('IPE Goal:', 110, yPos);
+        doc.setFont('helvetica', 'normal');
+        const ipeGoal = client.ipe_goal ? client.ipe_goal.substring(0, 40) + (client.ipe_goal.length > 40 ? '...' : '') : 'N/A';
+        doc.text(ipeGoal, 135, yPos);
         yPos += 20;
 
         // ============ ATTENDANCE LOG ============
@@ -199,8 +205,8 @@ export async function GET(request: NextRequest) {
         // Combine narratives from entries - grouped by day
         if (entries && entries.length > 0) {
             // Group entries by date
-            const entriesByDate: Record<string, { formatted_note: string; created_at: string }[]> = {};
-            entries.forEach((e: { formatted_note: string; created_at: string }) => {
+            const entriesByDate: Record<string, { formatted_note: string; processed_text?: string; created_at: string }[]> = {};
+            entries.forEach((e: { formatted_note: string; processed_text?: string; created_at: string }) => {
                 const dateKey = new Date(e.created_at).toLocaleDateString('en-US', { 
                     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' 
                 });
@@ -212,9 +218,59 @@ export async function GET(request: NextRequest) {
             
             doc.setFontSize(10);
             
-            // Render each day's combined narrative
+            // Helper to sanitize text (fix encoding issues)
+            const sanitizeText = (text: string): string => {
+                if (!text) return '';
+                // Remove problematic unicode characters that jsPDF can't render
+                return text
+                    .replace(/[\u{2026}]/gu, '...')  // ellipsis
+                    .replace(/[\u{201C}\u{201D}]/gu, '"')  // smart quotes
+                    .replace(/[\u{2018}\u{2019}]/gu, "'")  // smart apostrophes
+                    .replace(/[\u{2014}]/gu, '-')  // em dash
+                    .replace(/[\u{2013}]/gu, '-')  // en dash
+                    .replace(/[^\x00-\x7F]/g, '');  // Remove any remaining non-ASCII
+            };
+
+            // Helper to parse 4-section structure
+            const parseSections = (note: string): { header: string; content: string }[] => {
+                const sections: { header: string; content: string }[] = [];
+                const patterns = [
+                    { regex: /\*?\*?Tasks?\s*&?\s*Productivity:?\*?\*?/gi, header: 'TASKS & PRODUCTIVITY' },
+                    { regex: /\*?\*?Barriers?\s*&?\s*Behaviors?:?\*?\*?/gi, header: 'BARRIERS & BEHAVIORS' },
+                    { regex: /\*?\*?Interventions?:?\*?\*?/gi, header: 'INTERVENTIONS' },
+                    { regex: /\*?\*?Progress\s*(?:on\s*)?Goals?:?\*?\*?/gi, header: 'PROGRESS ON GOALS' },
+                ];
+                
+                // Split by any header pattern
+                const allPatterns = patterns.map(p => p.regex.source).join('|');
+                const splitRegex = new RegExp(`(${allPatterns})`, 'gi');
+                const parts = note.split(splitRegex).filter(Boolean);
+                
+                let currentHeader = '';
+                parts.forEach(part => {
+                    const trimmed = part.trim();
+                    if (!trimmed) return;
+                    
+                    // Check if this part is a header
+                    const matchedPattern = patterns.find(p => p.regex.test(trimmed));
+                    if (matchedPattern) {
+                        matchedPattern.regex.lastIndex = 0; // Reset regex
+                        currentHeader = matchedPattern.header;
+                    } else if (currentHeader) {
+                        sections.push({ header: currentHeader, content: sanitizeText(trimmed) });
+                        currentHeader = '';
+                    } else {
+                        // Content without header
+                        sections.push({ header: '', content: sanitizeText(trimmed) });
+                    }
+                });
+                
+                return sections;
+            };
+            
+            // Render each day's narrative with structured sections
             Object.keys(entriesByDate).forEach((dateKey) => {
-                if (yPos > 250) {
+                if (yPos > 230) {  // Better page break threshold
                     doc.addPage();
                     yPos = 20;
                 }
@@ -222,32 +278,57 @@ export async function GET(request: NextRequest) {
                 // Date header
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(primaryBlue);
-                doc.text(`📅 ${dateKey}`, 20, yPos);
-                yPos += 7;
+                doc.text(dateKey, 20, yPos);
+                yPos += 8;
                 
-                // Combine all notes for this day
-                const dayNotes = entriesByDate[dateKey].map(e => e.formatted_note).join('\n');
-                
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(darkText);
-                
-                const lines = doc.splitTextToSize(dayNotes, pageWidth - 45);
-                lines.forEach((line: string) => {
-                    if (yPos > 270) {
-                        doc.addPage();
-                        yPos = 20;
-                    }
-                    // Check for section headers
-                    if (line.includes('Tasks') || line.includes('Barriers') || 
-                        line.includes('Interventions') || line.includes('Progress')) {
-                        doc.setFont('helvetica', 'bold');
-                    } else {
+                // Process each entry for this day
+                entriesByDate[dateKey].forEach(e => {
+                    const noteText = e.formatted_note || e.processed_text || '';
+                    if (!noteText) return;
+                    
+                    const sections = parseSections(noteText);
+                    
+                    sections.forEach(section => {
+                        // Check for page break
+                        if (yPos > 260) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                        
+                        // Render section header if present
+                        if (section.header) {
+                            doc.setFont('helvetica', 'bold');
+                            // Color-code headers
+                            if (section.header.includes('TASKS')) {
+                                doc.setTextColor(0, 116, 217);  // Blue
+                            } else if (section.header.includes('BARRIERS')) {
+                                doc.setTextColor(217, 119, 6);  // Amber
+                            } else if (section.header.includes('INTERVENTION')) {
+                                doc.setTextColor(124, 58, 237);  // Purple
+                            } else if (section.header.includes('PROGRESS')) {
+                                doc.setTextColor(21, 128, 61);  // Green
+                            }
+                            doc.text(section.header + ':', 25, yPos);
+                            yPos += 5;
+                        }
+                        
+                        // Render content
                         doc.setFont('helvetica', 'normal');
-                    }
-                    doc.text(line, 25, yPos);
-                    yPos += 5;
+                        doc.setTextColor(darkText);
+                        
+                        const contentLines = doc.splitTextToSize(section.content, pageWidth - 50);
+                        contentLines.forEach((line: string) => {
+                            if (yPos > 270) {
+                                doc.addPage();
+                                yPos = 20;
+                            }
+                            doc.text(line, 28, yPos);
+                            yPos += 5;
+                        });
+                        yPos += 3; // Space between sections
+                    });
                 });
-                yPos += 5; // Space between days
+                yPos += 8; // Space between days
             });
         } else {
             doc.setFontSize(10);
