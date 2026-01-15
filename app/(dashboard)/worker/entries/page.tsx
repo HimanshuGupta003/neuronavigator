@@ -269,13 +269,13 @@ export default function WorkerEntriesPage() {
         return Array.from(allTags).sort();
     };
 
-    // Get selected client data for IPE goal display
-    const getSelectedClientData = () => {
-        if (!selectedClient) return null;
-        return clients.find(c => c.id === selectedClient);
+    // Get client data for IPE goal display based on entry's client_name
+    const getEntryClientData = () => {
+        if (!selectedEntry?.client_name) return null;
+        return clients.find(c => c.full_name === selectedEntry.client_name);
     };
 
-    const selectedClientData = getSelectedClientData();
+    const entryClientData = getEntryClientData();
 
     // Trend Detection - Analyze attendance patterns
     const getAttendanceTrends = () => {
@@ -792,10 +792,10 @@ export default function WorkerEntriesPage() {
                                 </div>
                                 
                                 {/* IPE Goal Display */}
-                                {selectedClientData?.ipe_goal && (
+                                {entryClientData?.ipe_goal && (
                                     <div className={styles.ipeGoalBox}>
                                         <span className={styles.ipeGoalLabel}>🎯 IPE Goal</span>
-                                        <p className={styles.ipeGoalText}>{selectedClientData.ipe_goal}</p>
+                                        <p className={styles.ipeGoalText}>{entryClientData.ipe_goal}</p>
                                     </div>
                                 )}
                             </div>
