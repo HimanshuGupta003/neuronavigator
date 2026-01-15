@@ -163,23 +163,48 @@ export default function CoachDashboardPage() {
     const handleClockOut = async () => {
         if (!activeShift) return;
         setShiftLoading(true);
+        setLocationError(null);
+        
         try {
+            if (!navigator.geolocation) {
+                setLocationError('Location services are not available. GPS is required to clock out.');
+                setShiftLoading(false);
+                return;
+            }
+
             let lat: number | null = null;
             let lng: number | null = null;
 
-            if (navigator.geolocation) {
-                try {
-                    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                        });
+            try {
+                const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
                     });
-                    lat = position.coords.latitude;
-                    lng = position.coords.longitude;
-                } catch (geoError) {
-                    console.warn('Failed to get location:', geoError);
+                });
+                lat = position.coords.latitude;
+                lng = position.coords.longitude;
+            } catch (geoError: unknown) {
+                const error = geoError as GeolocationPositionError;
+                let errorMessage = 'Unable to get your location. ';
+                
+                if (error.code === 1) {
+                    errorMessage = 'Location permission denied. Please enable location access to clock out.';
+                } else if (error.code === 2) {
+                    errorMessage = 'Unable to determine your location. Please ensure GPS is enabled.';
+                } else if (error.code === 3) {
+                    errorMessage = 'Location request timed out. Please try again.';
                 }
+                
+                setLocationError(errorMessage);
+                setShiftLoading(false);
+                return;
+            }
+
+            if (lat === null || lng === null) {
+                setLocationError('Could not obtain GPS coordinates.');
+                setShiftLoading(false);
+                return;
             }
 
             const { error } = await supabase
@@ -193,8 +218,10 @@ export default function CoachDashboardPage() {
 
             if (error) throw error;
             setActiveShift(null);
+            setLocationError(null);
         } catch (error) {
             console.error('Failed to clock out:', error);
+            setLocationError('Failed to clock out. Please try again.');
         } finally {
             setShiftLoading(false);
         }
