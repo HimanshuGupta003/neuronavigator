@@ -513,13 +513,64 @@ export default function CoachDashboardPage() {
                         <button className={styles.modalClose} onClick={() => setSelectedEntry(null)}>
                             <X size={20} />
                         </button>
-                        <h2 className={styles.entryModalTitle}>{selectedEntry.client_name || 'General Note'}</h2>
-                        <p className={styles.entryModalDate}>
-                            {new Date(selectedEntry.created_at).toLocaleString()}
-                        </p>
-                        <div className={styles.entryModalContent}>
-                            {selectedEntry.formatted_note || selectedEntry.processed_text || selectedEntry.summary || 'No content available'}
+                        
+                        {/* Header */}
+                        <div className={styles.entryModalHeader}>
+                            <h2 className={styles.entryModalTitle}>{selectedEntry.client_name || 'General Note'}</h2>
+                            <div className={styles.entryModalMeta}>
+                                <p className={styles.entryModalDate}>
+                                    {new Date(selectedEntry.created_at).toLocaleString()}
+                                </p>
+                                <span className={styles.entryMoodBadge}>
+                                    {(selectedEntry.status === 'green' || selectedEntry.mood === 'green' || selectedEntry.mood === 'good') ? '😊' :
+                                     (selectedEntry.status === 'red' || selectedEntry.mood === 'red' || selectedEntry.mood === 'bad') ? '😟' : '😐'}
+                                </span>
+                            </div>
                         </div>
+                        
+                        {/* Parsed Content Sections */}
+                        <div className={styles.entryModalSections}>
+                            {(() => {
+                                const noteText = selectedEntry.formatted_note || selectedEntry.processed_text || '';
+                                
+                                if (!noteText) {
+                                    return <p className={styles.noContent}>{selectedEntry.summary || 'No content available'}</p>;
+                                }
+                                
+                                // Parse sections from markdown
+                                const sections: { header: string; content: string; icon: string; color: string }[] = [];
+                                const sectionPatterns = [
+                                    { regex: /\*\*Tasks?\s*&?\s*Productivity:?\*\*\s*([\s\S]*?)(?=\*\*|$)/i, header: 'Tasks & Productivity', icon: '📋', color: 'tasks' },
+                                    { regex: /\*\*Barriers?\s*&?\s*Behaviors?:?\*\*\s*([\s\S]*?)(?=\*\*|$)/i, header: 'Barriers & Behaviors', icon: '⚠️', color: 'barriers' },
+                                    { regex: /\*\*Interventions?:?\*\*\s*([\s\S]*?)(?=\*\*|$)/i, header: 'Interventions', icon: '🛠️', color: 'interventions' },
+                                    { regex: /\*\*Progress\s*(?:on\s*)?Goals?:?\*\*\s*([\s\S]*?)(?=\*\*|$)/i, header: 'Progress on Goals', icon: '📈', color: 'progress' },
+                                ];
+                                
+                                sectionPatterns.forEach(({ regex, header, icon, color }) => {
+                                    const match = noteText.match(regex);
+                                    if (match && match[1]?.trim()) {
+                                        sections.push({ header, content: match[1].trim(), icon, color });
+                                    }
+                                });
+                                
+                                if (sections.length === 0) {
+                                    // No sections found, show as plain text
+                                    return <p className={styles.entryPlainContent}>{noteText.replace(/\*\*/g, '')}</p>;
+                                }
+                                
+                                return sections.map((section, i) => (
+                                    <div key={i} className={`${styles.sectionCard} ${styles[section.color + 'Section']}`}>
+                                        <div className={styles.sectionHeader}>
+                                            <span className={styles.sectionIcon}>{section.icon}</span>
+                                            <h4>{section.header}</h4>
+                                        </div>
+                                        <p className={styles.sectionContent}>{section.content}</p>
+                                    </div>
+                                ));
+                            })()}
+                        </div>
+                        
+                        {/* Tags */}
                         {selectedEntry.tags && selectedEntry.tags.length > 0 && (
                             <div className={styles.entryModalTags}>
                                 {selectedEntry.tags.map((tag, i) => (
