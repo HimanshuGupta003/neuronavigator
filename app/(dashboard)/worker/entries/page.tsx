@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ClipboardList, Calendar, User, ChevronDown, Smile, Meh, Frown } from 'lucide-react';
+import { ClipboardList, Calendar, User, ChevronDown, Smile, Meh, Frown, MapPin, Clock, X, Play, Pause, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import styles from './entries.module.css';
 
@@ -195,6 +195,49 @@ export default function WorkerEntriesPage() {
         }
     };
 
+    // Trend Detection - Analyze attendance patterns
+    const getAttendanceTrends = () => {
+        if (!selectedClient || entries.length < 2) return null;
+        
+        // Filter entries for selected client
+        const clientEntries = entries.slice(0, 10); // Last 10 entries for trend
+        
+        // Count entries with attendance-related tags
+        let attendanceIssues = 0;
+        let totalChecked = Math.min(clientEntries.length, 5);
+        
+        clientEntries.slice(0, 5).forEach(entry => {
+            if (entry.tags && entry.tags.some((tag: string) => 
+                ['Attendance', 'Punctuality', 'Late', 'Tardy'].includes(tag)
+            )) {
+                attendanceIssues++;
+            }
+            // Also check if formatted_note mentions late/tardiness
+            if (entry.formatted_note && (
+                entry.formatted_note.toLowerCase().includes('late') ||
+                entry.formatted_note.toLowerCase().includes('tardy') ||
+                entry.formatted_note.toLowerCase().includes('attendance barrier')
+            )) {
+                attendanceIssues++;
+            }
+        });
+        
+        // Dedupe - max 1 issue per entry
+        attendanceIssues = Math.min(attendanceIssues, totalChecked);
+        
+        if (attendanceIssues >= 2) {
+            return {
+                type: 'attendance',
+                message: `Late ${attendanceIssues} of ${totalChecked} recent sessions`,
+                severity: attendanceIssues >= 3 ? 'high' : 'medium'
+            };
+        }
+        
+        return null;
+    };
+
+    const attendanceTrend = getAttendanceTrends();
+
     // Helper to strip markdown and section headers for clean card display
     const cleanNoteText = (text: string): string => {
         if (!text) return 'No content available';
@@ -322,6 +365,14 @@ export default function WorkerEntriesPage() {
                 </div>
             </div>
 
+            {/* Trend Warning Banner */}
+            {attendanceTrend && (
+                <div className={`${styles.trendWarning} ${attendanceTrend.severity === 'high' ? styles.trendHigh : styles.trendMedium}`}>
+                    <AlertCircle size={18} />
+                    <span>📊 <strong>Trend Alert:</strong> {attendanceTrend.message}</span>
+                </div>
+            )}
+
             {/* Entries List */}
             <div className={styles.entriesList}>
                 {loading ? (
@@ -352,14 +403,23 @@ export default function WorkerEntriesPage() {
                                 {getCardSummary(entry)}
                             </p>
 
-                            {/* Tags */}
-                            {entry.tags && entry.tags.length > 0 && (
-                                <div className={styles.entryTags}>
-                                    {entry.tags.slice(0, 3).map((tag, index) => (
-                                        <span key={index} className={styles.tag}>{tag}</span>
-                                    ))}
-                                </div>
-                            )}
+                            {/* Tags + GPS Indicator */}
+                            <div className={styles.entryCardFooter}>
+                                {entry.tags && entry.tags.length > 0 && (
+                                    <div className={styles.entryTags}>
+                                        {entry.tags.slice(0, 3).map((tag, index) => (
+                                            <span key={index} className={styles.tag}>{tag}</span>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                {/* GPS Indicator */}
+                                {(entry.gps_lat && entry.gps_lng) && (
+                                    <span className={styles.gpsIndicator}>
+                                        <MapPin size={14} />
+                                    </span>
+                                )}
+                            </div>
 
                             {/* View Details Link */}
                             <button className={styles.viewDetailsBtn}>
@@ -557,15 +617,79 @@ export default function WorkerEntriesPage() {
                                 </div>
                             )}
 
-                            {/* Metadata Footer */}
-                            <div className={styles.metadataFooter}>
-                                {selectedEntry.location_string && (
-                                    <span className={styles.metaChip}>📍 {selectedEntry.location_string}</span>
+                            {/* Data Section */}
+                            <div className={styles.dataSection}>
+                                <h3 className={styles.dataSectionTitle}>📊 Session Data</h3>
+                                <div className={styles.dataGrid}>
+                                    {/* Consumer Hours */}
+                                    <div className={styles.dataItem}>
+                                        <span className={styles.dataLabel}>Consumer Hours</span>
+                                        <span className={styles.dataValue}>
+                                            {selectedEntry.consumer_hours ? `${selectedEntry.consumer_hours} hrs` : '—'}
+                                        </span>
+                                    </div>
+                                    
+                                    {/* Mood */}
+                                    <div className={styles.dataItem}>
+                                        <span className={styles.dataLabel}>Mood</span>
+                                        <span className={styles.dataValue}>
+                                            {getMoodEmoji(selectedEntry.status || selectedEntry.mood)}
+                                        </span>
+                                    </div>
+                                    
+                                    {/* Timestamp */}
+                                    <div className={styles.dataItem}>
+                                        <span className={styles.dataLabel}>Recorded</span>
+                                        <span className={styles.dataValue}>
+                                            {new Date(selectedEntry.created_at).toLocaleString()}
+                                        </span>
+                                    </div>
+                                    
+                                    {/* Location */}
+                                    <div className={styles.dataItem}>
+                                        <span className={styles.dataLabel}>Location</span>
+                                        <span className={styles.dataValue}>
+                                            {selectedEntry.location_string ? (
+                                                <span className={styles.locationWithIcon}>
+                                                    <MapPin size={14} />
+                                                    {selectedEntry.location_string}
+                                                </span>
+                                            ) : selectedEntry.gps_lat && selectedEntry.gps_lng ? (
+                                                <span className={styles.locationWithIcon}>
+                                                    <MapPin size={14} />
+                                                    {selectedEntry.gps_lat.toFixed(4)}, {selectedEntry.gps_lng.toFixed(4)}
+                                                </span>
+                                            ) : '—'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Audit Section */}
+                            <div className={styles.auditSection}>
+                                <h3 className={styles.auditSectionTitle}>📝 Audit Trail</h3>
+                                
+                                {/* Raw Transcript */}
+                                {selectedEntry.raw_transcript && (
+                                    <details className={styles.auditDetail}>
+                                        <summary className={styles.auditSummary}>
+                                            <span>🎤 Raw Transcript</span>
+                                            <ChevronDown size={16} />
+                                        </summary>
+                                        <p className={styles.auditContent}>{selectedEntry.raw_transcript}</p>
+                                    </details>
                                 )}
-                                {selectedEntry.gps_lat && selectedEntry.gps_lng && !selectedEntry.location_string && (
-                                    <span className={styles.metaChip}>
-                                        📍 {selectedEntry.gps_lat.toFixed(4)}, {selectedEntry.gps_lng.toFixed(4)}
-                                    </span>
+                                
+                                {/* Audio Playback */}
+                                {selectedEntry.audio_url && (
+                                    <div className={styles.audioPlayer}>
+                                        <span className={styles.audioLabel}>🔊 Audio Recording</span>
+                                        <audio 
+                                            controls 
+                                            className={styles.audioElement}
+                                            src={selectedEntry.audio_url}
+                                        />
+                                    </div>
                                 )}
                             </div>
                         </div>

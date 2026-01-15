@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Mic, Clock, FileText, Play, Square, MapPin, AlertCircle, ArrowRight, Users } from 'lucide-react';
+import { Mic, Clock, FileText, Play, Square, MapPin, AlertCircle, ArrowRight, Users, X, ChevronDown } from 'lucide-react';
 import { Profile, Shift, Entry } from '@/lib/types';
 import Link from 'next/link';
 import styles from './worker.module.css';
@@ -17,6 +17,9 @@ export default function CoachDashboardPage() {
     const [shiftLoading, setShiftLoading] = useState(false);
     const [shiftDuration, setShiftDuration] = useState('0:00:00');
     const [locationError, setLocationError] = useState<string | null>(null);
+    const [showShiftSummary, setShowShiftSummary] = useState(false);
+    const [shiftSummaryData, setShiftSummaryData] = useState<{ duration: string; entryCount: number } | null>(null);
+    const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
 
     useEffect(() => {
         loadDashboard();
@@ -88,7 +91,7 @@ export default function CoachDashboardPage() {
                 .select('*')
                 .eq('worker_id', user.id)
                 .order('created_at', { ascending: false })
-                .limit(5);
+                .limit(3);
 
             if (entriesData) {
                 setRecentEntries(entriesData as Entry[]);
@@ -231,6 +234,21 @@ export default function CoachDashboardPage() {
                 .eq('id', activeShift.id);
 
             if (error) throw error;
+            
+            // Count entries created during this shift
+            const { count: entryCount } = await supabase
+                .from('entries')
+                .select('*', { count: 'exact', head: true })
+                .eq('worker_id', (await supabase.auth.getUser()).data.user?.id)
+                .gte('created_at', activeShift.clock_in_at);
+            
+            // Show shift summary modal
+            setShiftSummaryData({
+                duration: shiftDuration,
+                entryCount: entryCount || 0
+            });
+            setShowShiftSummary(true);
+            
             setActiveShift(null);
             setLocationError(null);
         } catch (error) {
@@ -429,7 +447,11 @@ export default function CoachDashboardPage() {
                     <div className={styles.entryList}>
                         {recentEntries.map((entry) => (
                             <div key={entry.id} className={styles.entryItem}>
-                                <div className={styles.entryHeader}>
+                                <div 
+                                    className={styles.entryHeader}
+                                    onClick={() => setSelectedEntry(entry)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <div className={styles.entryClientRow}>
                                         <span className={styles.entryClientName}>
                                             {entry.client_name || 'General Note'}
@@ -442,7 +464,7 @@ export default function CoachDashboardPage() {
                                         {getMoodEmoji(entry.mood)}
                                     </span>
                                 </div>
-                                <p className={styles.entryText}>
+                                <p className={styles.entryText} onClick={() => setSelectedEntry(entry)} style={{ cursor: 'pointer' }}>
                                     {cleanNoteText(entry.formatted_summary || entry.summary || entry.processed_text || entry.raw_transcript || '')}
                                 </p>
                                 {entry.tags && entry.tags.length > 0 && (
@@ -457,6 +479,57 @@ export default function CoachDashboardPage() {
                     </div>
                 )}
             </div>
+            
+            {/* Shift Summary Modal */}
+            {showShiftSummary && shiftSummaryData && (
+                <div className={styles.modalOverlay} onClick={() => setShowShiftSummary(false)}>
+                    <div className={styles.shiftSummaryModal} onClick={(e) => e.stopPropagation()}>
+                        <button className={styles.modalClose} onClick={() => setShowShiftSummary(false)}>
+                            <X size={20} />
+                        </button>
+                        <div className={styles.summaryIcon}>✅</div>
+                        <h2 className={styles.summaryTitle}>Shift Complete!</h2>
+                        <div className={styles.summaryStats}>
+                            <div className={styles.summaryStat}>
+                                <span className={styles.statLabel}>Total Time</span>
+                                <span className={styles.statValue}>{shiftSummaryData.duration}</span>
+                            </div>
+                            <div className={styles.summaryStat}>
+                                <span className={styles.statLabel}>Notes Recorded</span>
+                                <span className={styles.statValue}>{shiftSummaryData.entryCount}</span>
+                            </div>
+                        </div>
+                        <button className={styles.summaryBtn} onClick={() => setShowShiftSummary(false)}>
+                            Done
+                        </button>
+                    </div>
+                </div>
+            )}
+            
+            {/* Entry Details Modal */}
+            {selectedEntry && (
+                <div className={styles.modalOverlay} onClick={() => setSelectedEntry(null)}>
+                    <div className={styles.entryModal} onClick={(e) => e.stopPropagation()}>
+                        <button className={styles.modalClose} onClick={() => setSelectedEntry(null)}>
+                            <X size={20} />
+                        </button>
+                        <h2 className={styles.entryModalTitle}>{selectedEntry.client_name || 'General Note'}</h2>
+                        <p className={styles.entryModalDate}>
+                            {new Date(selectedEntry.created_at).toLocaleString()}
+                        </p>
+                        <div className={styles.entryModalContent}>
+                            {selectedEntry.formatted_note || selectedEntry.processed_text || selectedEntry.summary || 'No content available'}
+                        </div>
+                        {selectedEntry.tags && selectedEntry.tags.length > 0 && (
+                            <div className={styles.entryModalTags}>
+                                {selectedEntry.tags.map((tag, i) => (
+                                    <span key={i} className={styles.entryTag}>{tag}</span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
