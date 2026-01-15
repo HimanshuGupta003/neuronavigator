@@ -34,6 +34,7 @@ interface Entry {
 interface Client {
     id: string;
     full_name: string;
+    ipe_goal?: string | null;
 }
 
 export default function WorkerEntriesPage() {
@@ -42,12 +43,18 @@ export default function WorkerEntriesPage() {
     const [clients, setClients] = useState<Client[]>([]);
     const [selectedClient, setSelectedClient] = useState<string>('');
     const [selectedMonth, setSelectedMonth] = useState<string>('all');
+    const [selectedTag, setSelectedTag] = useState<string>('');
+    const [selectedGoalProgress, setSelectedGoalProgress] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+    const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
+    const [isGoalDropdownOpen, setIsGoalDropdownOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const monthDropdownRef = useRef<HTMLDivElement>(null);
+    const tagDropdownRef = useRef<HTMLDivElement>(null);
+    const goalDropdownRef = useRef<HTMLDivElement>(null);
 
     // Close dropdowns when clicking outside
     useEffect(() => {
@@ -57,6 +64,12 @@ export default function WorkerEntriesPage() {
             }
             if (monthDropdownRef.current && !monthDropdownRef.current.contains(event.target as Node)) {
                 setIsMonthDropdownOpen(false);
+            }
+            if (tagDropdownRef.current && !tagDropdownRef.current.contains(event.target as Node)) {
+                setIsTagDropdownOpen(false);
+            }
+            if (goalDropdownRef.current && !goalDropdownRef.current.contains(event.target as Node)) {
+                setIsGoalDropdownOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -70,7 +83,7 @@ export default function WorkerEntriesPage() {
 
     useEffect(() => {
         loadEntries();
-    }, [selectedClient, selectedMonth]);
+    }, [selectedClient, selectedMonth, selectedTag, selectedGoalProgress]);
 
     async function loadClients() {
         try {
@@ -78,7 +91,7 @@ export default function WorkerEntriesPage() {
             if (user) {
                 const { data } = await supabase
                     .from('clients')
-                    .select('id, full_name')
+                    .select('id, full_name, ipe_goal')
                     .eq('coach_id', user.id)
                     .order('full_name');
 
@@ -140,7 +153,30 @@ export default function WorkerEntriesPage() {
 
                 const { data } = await query;
                 if (data) {
-                    setEntries(data);
+                    // Client-side filtering for tags and goal progress
+                    let filteredData = data;
+                    
+                    // Filter by tag
+                    if (selectedTag) {
+                        filteredData = filteredData.filter(entry => 
+                            entry.tags && entry.tags.includes(selectedTag)
+                        );
+                    }
+                    
+                    // Filter by goal progress
+                    if (selectedGoalProgress === 'hasProgress') {
+                        filteredData = filteredData.filter(entry => 
+                            (entry.tags && entry.tags.includes('IPE Progress')) ||
+                            (entry.progress && entry.progress.length > 0)
+                        );
+                    } else if (selectedGoalProgress === 'noProgress') {
+                        filteredData = filteredData.filter(entry => 
+                            (!entry.tags || !entry.tags.includes('IPE Progress')) &&
+                            (!entry.progress || entry.progress.length === 0)
+                        );
+                    }
+                    
+                    setEntries(filteredData);
                 }
             }
         } catch (error) {
@@ -194,6 +230,25 @@ export default function WorkerEntriesPage() {
             default: return 'All Time';
         }
     };
+
+    // Get unique tags from all entries for filter dropdown
+    const getUniqueTags = (): string[] => {
+        const allTags = new Set<string>();
+        entries.forEach(entry => {
+            if (entry.tags) {
+                entry.tags.forEach(tag => allTags.add(tag));
+            }
+        });
+        return Array.from(allTags).sort();
+    };
+
+    // Get selected client data for IPE goal display
+    const getSelectedClientData = () => {
+        if (!selectedClient) return null;
+        return clients.find(c => c.id === selectedClient);
+    };
+
+    const selectedClientData = getSelectedClientData();
 
     // Trend Detection - Analyze attendance patterns
     const getAttendanceTrends = () => {
@@ -355,6 +410,79 @@ export default function WorkerEntriesPage() {
                                         e.stopPropagation();
                                         setSelectedMonth(option.value);
                                         setIsMonthDropdownOpen(false);
+                                    }}
+                                >
+                                    <span>{option.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Tag Filter Dropdown */}
+                <div 
+                    ref={tagDropdownRef}
+                    className={`${styles.customDropdown} ${isTagDropdownOpen ? styles.dropdownOpen : ''}`}
+                    onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
+                >
+                    <span className={styles.dropdownValue}>{selectedTag || 'All Tags'}</span>
+                    <ChevronDown size={18} className={styles.dropdownArrow} />
+                    
+                    {isTagDropdownOpen && (
+                        <div className={styles.dropdownMenu}>
+                            <div 
+                                className={`${styles.dropdownOption} ${!selectedTag ? styles.optionSelected : ''}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedTag('');
+                                    setIsTagDropdownOpen(false);
+                                }}
+                            >
+                                <span>All Tags</span>
+                            </div>
+                            {getUniqueTags().map((tag) => (
+                                <div 
+                                    key={tag}
+                                    className={`${styles.dropdownOption} ${selectedTag === tag ? styles.optionSelected : ''}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedTag(tag);
+                                        setIsTagDropdownOpen(false);
+                                    }}
+                                >
+                                    <span>{tag}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Goal Progress Dropdown */}
+                <div 
+                    ref={goalDropdownRef}
+                    className={`${styles.customDropdown} ${isGoalDropdownOpen ? styles.dropdownOpen : ''}`}
+                    onClick={() => setIsGoalDropdownOpen(!isGoalDropdownOpen)}
+                >
+                    <span className={styles.dropdownValue}>
+                        {selectedGoalProgress === 'hasProgress' ? 'With Progress' : 
+                         selectedGoalProgress === 'noProgress' ? 'No Progress' : 'All Goal Progress'}
+                    </span>
+                    <ChevronDown size={18} className={styles.dropdownArrow} />
+                    
+                    {isGoalDropdownOpen && (
+                        <div className={styles.dropdownMenu}>
+                            {[
+                                { value: '', label: 'All Goal Progress' },
+                                { value: 'hasProgress', label: 'With Progress' },
+                                { value: 'noProgress', label: 'No Progress' },
+                            ].map((option) => (
+                                <div 
+                                    key={option.value}
+                                    className={`${styles.dropdownOption} ${selectedGoalProgress === option.value ? styles.optionSelected : ''}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedGoalProgress(option.value);
+                                        setIsGoalDropdownOpen(false);
                                     }}
                                 >
                                     <span>{option.label}</span>
@@ -535,33 +663,7 @@ export default function WorkerEntriesPage() {
                                         );
                                     })()}
                                 </div>
-                                {selectedEntry.consumer_hours && (
-                                    <div className={styles.hoursChip}>
-                                        🕐 {selectedEntry.consumer_hours} consumer hours
-                                    </div>
-                                )}
                             </div>
-
-                            {/* 2. Original Transcript */}
-                            {selectedEntry.raw_transcript && (
-                                <div className={styles.transcriptCard}>
-                                    <div className={styles.transcriptHeader}>
-                                        <span className={styles.transcriptIcon}>🎙️</span>
-                                        <h3>Original Transcript</h3>
-                                    </div>
-                                    <p className={styles.transcriptText}>{selectedEntry.raw_transcript}</p>
-                                </div>
-                            )}
-
-                            {/* 3. Audio Playback */}
-                            {selectedEntry.audio_url && (
-                                <div className={styles.audioCard}>
-                                    <h4>🔊 Audio Recording</h4>
-                                    <audio controls src={selectedEntry.audio_url} className={styles.audioPlayer}>
-                                        Your browser does not support the audio element.
-                                    </audio>
-                                </div>
-                            )}
 
                             {/* 4. Narrative Headers Grid - Beautified */}
                             {(selectedEntry.tasks || selectedEntry.barriers || selectedEntry.interventions || selectedEntry.progress) && (
@@ -663,6 +765,14 @@ export default function WorkerEntriesPage() {
                                         </span>
                                     </div>
                                 </div>
+                                
+                                {/* IPE Goal Display */}
+                                {selectedClientData?.ipe_goal && (
+                                    <div className={styles.ipeGoalBox}>
+                                        <span className={styles.ipeGoalLabel}>🎯 IPE Goal</span>
+                                        <p className={styles.ipeGoalText}>{selectedClientData.ipe_goal}</p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Audit Section */}
