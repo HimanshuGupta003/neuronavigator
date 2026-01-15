@@ -16,6 +16,7 @@ export default function CoachDashboardPage() {
     const [loading, setLoading] = useState(true);
     const [shiftLoading, setShiftLoading] = useState(false);
     const [shiftDuration, setShiftDuration] = useState('0:00:00');
+    const [locationError, setLocationError] = useState<string | null>(null);
 
     useEffect(() => {
         loadDashboard();
@@ -101,26 +102,54 @@ export default function CoachDashboardPage() {
 
     const handleClockIn = async () => {
         setShiftLoading(true);
+        setLocationError(null);  // Clear any previous error
+        
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
+            // GPS is REQUIRED for EVV compliance
+            if (!navigator.geolocation) {
+                setLocationError('Location services are not available on this device. GPS is required to clock in.');
+                setShiftLoading(false);
+                return;
+            }
+
             let lat: number | null = null;
             let lng: number | null = null;
 
-            if (navigator.geolocation) {
-                try {
-                    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                        });
+            try {
+                const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 15000,  // Increased timeout
                     });
-                    lat = position.coords.latitude;
-                    lng = position.coords.longitude;
-                } catch (geoError) {
-                    console.warn('Failed to get location:', geoError);
+                });
+                lat = position.coords.latitude;
+                lng = position.coords.longitude;
+            } catch (geoError: unknown) {
+                // GPS permission denied or failed - BLOCK clock-in
+                const error = geoError as GeolocationPositionError;
+                let errorMessage = 'Unable to get your location. ';
+                
+                if (error.code === 1) {
+                    errorMessage = 'Location permission denied. Please enable location access in your browser settings to clock in.';
+                } else if (error.code === 2) {
+                    errorMessage = 'Unable to determine your location. Please ensure GPS is enabled and try again.';
+                } else if (error.code === 3) {
+                    errorMessage = 'Location request timed out. Please try again in an area with better GPS signal.';
                 }
+                
+                setLocationError(errorMessage);
+                setShiftLoading(false);
+                return;  // BLOCK clock-in
+            }
+
+            // Verify we actually got coordinates
+            if (lat === null || lng === null) {
+                setLocationError('Could not obtain GPS coordinates. Please enable location services and try again.');
+                setShiftLoading(false);
+                return;
             }
 
             const { data, error } = await supabase
@@ -138,6 +167,7 @@ export default function CoachDashboardPage() {
             setActiveShift(data as Shift);
         } catch (error) {
             console.error('Failed to clock in:', error);
+            setLocationError('Failed to clock in. Please try again.');
         } finally {
             setShiftLoading(false);
         }
@@ -260,6 +290,14 @@ export default function CoachDashboardPage() {
                         </>
                     )}
                 </button>
+            )}
+
+            {/* Location Error Message */}
+            {locationError && (
+                <div className={styles.locationError}>
+                    <AlertCircle size={20} />
+                    <span>{locationError}</span>
+                </div>
             )}
 
             {/* Active Shift Card */}

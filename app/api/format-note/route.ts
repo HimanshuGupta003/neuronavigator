@@ -76,6 +76,30 @@ PRODUCTIVITY METRICS to look for and include:
 - Quantity (e.g., "stocked 3 full shelves")
 - Quality (e.g., "met quality standards")
 
+=== FEW-SHOT LEARNING EXAMPLES ===
+Use these exact translations when you hear these phrases:
+
+INTERVENTION MAPPING:
+- Coach says: "I watched him" / "I stood back" → Write: "Observation / Stand-by Assistance"
+- Coach says: "I told him" / "I reminded him" / "I asked him to" → Write: "Verbal Prompt"
+- Coach says: "I showed him" / "I did it for him first" → Write: "Modeling / Demonstration"
+- Coach says: "I grabbed his hand" / "I guided his arm" / "put my hand over his" → Write: "Physical Assistance / Hand-over-Hand"
+
+BEHAVIOR MAPPING:
+- Coach says: "He was mad" / "He was grumpy" → Write: "Client exhibited low frustration tolerance / mood dysregulation"
+- Coach says: "He wouldn't stop talking" / "He annoyed the customer" → Write: "Social boundary challenge"
+- Coach says: "He almost got hurt" / "walked in front of a forklift" → Write: "Safety incident (intervention required to prevent injury)"
+- Coach says: "He was pacing" / "wouldn't sit still" → Write: "Exhibited anxiety-related motor behaviors"
+
+PRODUCTIVITY MAPPING:
+- Coach says: "He was slow" → Write: "Pace was below employer baseline"
+- Coach says: "He got it done fast" / "in record time" → Write: "Met or exceeded productivity standards"
+- Coach says: "Usually takes him an hour, but he did it in 40 minutes" → Write: "25% improvement in task completion time (40 mins vs 60 min baseline)"
+
+SKILL ACQUISITION:
+- Coach says: "After I showed him twice, he did it by himself" → Write: "Demonstrated skill acquisition after 2 demonstrations"
+- Coach says: "He figured it out on his own" → Write: "Showed independent problem-solving"
+
 Return your response in this exact JSON format:
 {
   "formattedNote": "The formatted note with 4 sections as described below",
@@ -86,18 +110,18 @@ Return your response in this exact JSON format:
 The formattedNote MUST be structured with these exact 4 headers:
 
 **Tasks & Productivity:**
-(What tasks did the client work on? Include specific productivity metrics if mentioned - speed, accuracy, quantity. How did they meet shift requirements?)
+(What tasks did the client work on? Include specific productivity metrics if mentioned - speed, accuracy, quantity. Compare to baseline if mentioned. How did they meet shift requirements?)
 
 **Barriers & Behaviors:**
-(Any issues, sensory challenges, behavioral concerns, or attendance problems? Be specific about what barriers occurred and how they affected work performance.)
+(Any issues, sensory challenges, behavioral concerns, or attendance problems? Be specific. Include transportation issues, anxiety, safety incidents. Use clinical terminology.)
 
 **Interventions:**
-(What support strategies did the Coach provide? SPECIFY THE TYPE: Verbal Prompt, Physical Modeling, Observation Only, or Task Modification. What was the barrier that needed resolution?)
+(What support strategies did the Coach provide? SPECIFY THE TYPE using the exact terms: Verbal Prompt, Modeling/Demonstration, Physical Assistance/Hand-over-Hand, Observation/Stand-by Assistance, or Task Modification. Note what barrier the intervention addressed.)
 
 **Progress on Goals:**
-(How did the client progress toward their IPE Goal: ${ipeGoal || 'competitive integrated employment'}? Reference their stated client goals: ${clientGoals || 'their goals'}. Use vocational terminology.)
+(How did the client progress toward their IPE Goal: ${ipeGoal || 'competitive integrated employment'}? Reference improvements like skill acquisition, increased independence, or productivity gains. Link to client goals: ${clientGoals || 'their goals'}.)
 
-Possible tags include: Tasks, Productivity, Attendance, Communication, Social Skills, Sensory, Behavior, Verbal Prompt, Physical Modeling, Observation, Progress, Punctuality, Safety, Independence, Milestone, Met Standards, IPE Progress`;
+Possible tags include: Tasks, Productivity, Attendance, Communication, Social Skills, Sensory, Behavior, Verbal Prompt, Physical Modeling, Observation, Progress, Punctuality, Safety, Independence, Milestone, Met Standards, IPE Progress, Skill Acquisition, Hand-over-Hand`;
 
 
         const completion = await openai.chat.completions.create({
