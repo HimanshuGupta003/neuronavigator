@@ -51,10 +51,37 @@ export default function WorkerEntriesPage() {
     const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
     const [isGoalDropdownOpen, setIsGoalDropdownOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+    const [locationName, setLocationName] = useState<string>('');
     const dropdownRef = useRef<HTMLDivElement>(null);
     const monthDropdownRef = useRef<HTMLDivElement>(null);
     const tagDropdownRef = useRef<HTMLDivElement>(null);
     const goalDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Fetch location name when modal opens
+    useEffect(() => {
+        async function fetchLocationName() {
+            if (selectedEntry?.gps_lat && selectedEntry?.gps_lng && !selectedEntry?.location_string) {
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${selectedEntry.gps_lat}&lon=${selectedEntry.gps_lng}&zoom=16`
+                    );
+                    const data = await response.json();
+                    if (data.display_name) {
+                        // Extract just city/area from the full address
+                        const parts = data.display_name.split(', ');
+                        const shortName = parts.slice(0, 3).join(', ');
+                        setLocationName(shortName);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch location name:', error);
+                    setLocationName('');
+                }
+            } else {
+                setLocationName('');
+            }
+        }
+        fetchLocationName();
+    }, [selectedEntry]);
 
     // Close dropdowns when clicking outside
     useEffect(() => {
@@ -540,13 +567,6 @@ export default function WorkerEntriesPage() {
                                         ))}
                                     </div>
                                 )}
-                                
-                                {/* GPS Indicator */}
-                                {(entry.gps_lat && entry.gps_lng) && (
-                                    <span className={styles.gpsIndicator}>
-                                        <MapPin size={14} />
-                                    </span>
-                                )}
                             </div>
 
                             {/* View Details Link */}
@@ -759,7 +779,12 @@ export default function WorkerEntriesPage() {
                                             ) : selectedEntry.gps_lat && selectedEntry.gps_lng ? (
                                                 <span className={styles.locationWithIcon}>
                                                     <MapPin size={14} />
-                                                    {selectedEntry.gps_lat.toFixed(4)}, {selectedEntry.gps_lng.toFixed(4)}
+                                                    <span className={styles.locationDetails}>
+                                                        {locationName || 'Loading...'}
+                                                        <span className={styles.locationCoords}>
+                                                            ({selectedEntry.gps_lat.toFixed(4)}, {selectedEntry.gps_lng.toFixed(4)})
+                                                        </span>
+                                                    </span>
                                                 </span>
                                             ) : '—'}
                                         </span>
