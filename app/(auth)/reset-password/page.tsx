@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -20,11 +20,17 @@ export default function ResetPasswordPage() {
     const [success, setSuccess] = useState(false);
     const [validSession, setValidSession] = useState<boolean | null>(null);
 
+    // Use ref to track if password reset was successful (to prevent race condition)
+    const resetCompletedRef = useRef(false);
+
     useEffect(() => {
         // Listen for auth state changes - Supabase will automatically
         // pick up the recovery token from the URL and create a session
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
+                // Don't update state if password reset was already completed
+                if (resetCompletedRef.current) return;
+
                 if (event === 'PASSWORD_RECOVERY') {
                     // User clicked the password reset link
                     setValidSession(true);
@@ -32,7 +38,10 @@ export default function ResetPasswordPage() {
                     // Session established from recovery token
                     setValidSession(true);
                 } else if (event === 'SIGNED_OUT') {
-                    setValidSession(false);
+                    // Only set invalid session if reset wasn't completed
+                    if (!resetCompletedRef.current) {
+                        setValidSession(false);
+                    }
                 }
             }
         );
@@ -102,11 +111,14 @@ export default function ResetPasswordPage() {
                 throw updateError;
             }
 
+            // Mark reset as completed BEFORE signing out to prevent race condition
+            resetCompletedRef.current = true;
             setSuccess(true);
 
-            // Sign out and redirect to login after 3 seconds
+            // Sign out silently
             await supabase.auth.signOut();
 
+            // Redirect to login after 3 seconds
             setTimeout(() => {
                 router.push('/login');
             }, 3000);
@@ -133,7 +145,80 @@ export default function ResetPasswordPage() {
         );
     }
 
-    // Invalid or expired session
+    // IMPORTANT: Check success BEFORE checking validSession to prevent flash of "Link Expired"
+    // This is the key fix for the race condition
+    if (success) {
+        return (
+            <div className={styles.container}>
+                <div className={`${styles.decorativeOrb} ${styles.orb1}`}></div>
+                <div className={`${styles.decorativeOrb} ${styles.orb2}`}></div>
+
+                <div className={styles.leftPanel}>
+                    <div className={styles.leftPanelContent}>
+                        <div className={styles.brandLogo}>
+                            <div className={styles.logoIcon}>
+                                <Brain size={32} />
+                            </div>
+                            <div>
+                                <h1 className={styles.brandName}>CoachAlly</h1>
+                                <p className={styles.brandTagline}>AI-Powered Field Reporting</p>
+                            </div>
+                        </div>
+
+                        <h2 className={styles.heroTitle}>
+                            Password<br />Updated!
+                        </h2>
+                        <p className={styles.heroSubtitle}>
+                            Your password has been successfully changed.
+                            You can now sign in with your new password.
+                        </p>
+                    </div>
+                </div>
+
+                <div className={styles.rightPanel}>
+                    <div className={styles.formContainer}>
+                        <div className={styles.mobileLogo}>
+                            <div className={styles.mobileLogoIcon}>
+                                <Brain size={36} />
+                            </div>
+                            <h1 className={styles.mobileLogoText}>
+                                <span className={styles.mobileLogoGradient}>Coach</span>Ally
+                            </h1>
+                        </div>
+
+                        <div className={styles.card}>
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{
+                                    width: '64px',
+                                    height: '64px',
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    margin: '0 auto 20px auto'
+                                }}>
+                                    <CheckCircle size={32} color="white" />
+                                </div>
+                                <h2 className={styles.cardTitle}>Password Reset!</h2>
+                                <p className={styles.cardSubtitle} style={{ marginBottom: '24px' }}>
+                                    Your password has been successfully updated.<br />
+                                    Redirecting you to login...
+                                </p>
+                                <div className={styles.buttonSpinner} style={{
+                                    margin: '0 auto',
+                                    borderColor: 'rgba(2, 132, 199, 0.3)',
+                                    borderTopColor: '#0284c7'
+                                }}></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Invalid or expired session (only show if NOT successful)
     if (!validSession) {
         return (
             <div className={styles.container}>
@@ -245,147 +330,116 @@ export default function ResetPasswordPage() {
 
                     {/* Card */}
                     <div className={styles.card}>
-                        {success ? (
-                            // Success State
-                            <div style={{ textAlign: 'center' }}>
-                                <div style={{
-                                    width: '64px',
-                                    height: '64px',
-                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    borderRadius: '50%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    margin: '0 auto 20px auto'
-                                }}>
-                                    <CheckCircle size={32} color="white" />
-                                </div>
-                                <h2 className={styles.cardTitle}>Password Reset!</h2>
-                                <p className={styles.cardSubtitle} style={{ marginBottom: '24px' }}>
-                                    Your password has been successfully updated.<br />
-                                    Redirecting you to login...
-                                </p>
-                                <div className={styles.buttonSpinner} style={{
-                                    margin: '0 auto',
-                                    borderColor: 'rgba(2, 132, 199, 0.3)',
-                                    borderTopColor: '#0284c7'
-                                }}></div>
-                            </div>
-                        ) : (
-                            // Form State
-                            <>
-                                <h2 className={styles.cardTitle}>Reset Password</h2>
-                                <p className={styles.cardSubtitle}>
-                                    Enter your new password below
-                                </p>
+                        <h2 className={styles.cardTitle}>Reset Password</h2>
+                        <p className={styles.cardSubtitle}>
+                            Enter your new password below
+                        </p>
 
-                                <form onSubmit={handleSubmit} className={styles.form}>
-                                    {/* Password Field */}
-                                    <div className={styles.inputGroup}>
-                                        <label htmlFor="password" className={styles.inputLabel}>
-                                            New Password
-                                        </label>
-                                        <div className={styles.inputWrapper}>
-                                            <Lock size={20} className={styles.inputIcon} />
-                                            <input
-                                                type={showPassword ? 'text' : 'password'}
-                                                id="password"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                required
-                                                className={`${styles.input} ${password ? styles.inputFilled : ''}`}
-                                                placeholder="Enter new password"
-                                                autoComplete="new-password"
-                                                minLength={6}
-                                            />
-                                            <button
-                                                type="button"
-                                                className={styles.passwordToggle}
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                tabIndex={-1}
-                                            >
-                                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Confirm Password Field */}
-                                    <div className={styles.inputGroup}>
-                                        <label htmlFor="confirmPassword" className={styles.inputLabel}>
-                                            Confirm Password
-                                        </label>
-                                        <div className={styles.inputWrapper}>
-                                            <Lock size={20} className={styles.inputIcon} />
-                                            <input
-                                                type={showConfirmPassword ? 'text' : 'password'}
-                                                id="confirmPassword"
-                                                value={confirmPassword}
-                                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                                required
-                                                className={`${styles.input} ${confirmPassword ? styles.inputFilled : ''}`}
-                                                placeholder="Confirm new password"
-                                                autoComplete="new-password"
-                                                minLength={6}
-                                            />
-                                            <button
-                                                type="button"
-                                                className={styles.passwordToggle}
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                tabIndex={-1}
-                                            >
-                                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Error Message */}
-                                    {error && (
-                                        <div className={styles.errorContainer}>
-                                            <div className={styles.errorIcon}>!</div>
-                                            <p className={styles.errorText}>{error}</p>
-                                        </div>
-                                    )}
-
-                                    {/* Submit Button */}
+                        <form onSubmit={handleSubmit} className={styles.form}>
+                            {/* Password Field */}
+                            <div className={styles.inputGroup}>
+                                <label htmlFor="password" className={styles.inputLabel}>
+                                    New Password
+                                </label>
+                                <div className={styles.inputWrapper}>
+                                    <Lock size={20} className={styles.inputIcon} />
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        id="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        className={`${styles.input} ${password ? styles.inputFilled : ''}`}
+                                        placeholder="Enter new password"
+                                        autoComplete="new-password"
+                                        minLength={6}
+                                    />
                                     <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className={styles.submitButton}
+                                        type="button"
+                                        className={styles.passwordToggle}
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        tabIndex={-1}
                                     >
-                                        {loading ? (
-                                            <>
-                                                <div className={styles.buttonSpinner}></div>
-                                                <span>Updating...</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Lock size={20} />
-                                                <span>Update Password</span>
-                                            </>
-                                        )}
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
-                                </form>
-
-                                {/* Back to Login */}
-                                <div className={styles.footer}>
-                                    <Link
-                                        href="/login"
-                                        style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '6px',
-                                            color: '#0284c7',
-                                            textDecoration: 'none',
-                                            fontSize: '14px',
-                                            fontWeight: '600'
-                                        }}
-                                    >
-                                        <ArrowLeft size={16} />
-                                        Back to Login
-                                    </Link>
                                 </div>
-                            </>
-                        )}
+                            </div>
+
+                            {/* Confirm Password Field */}
+                            <div className={styles.inputGroup}>
+                                <label htmlFor="confirmPassword" className={styles.inputLabel}>
+                                    Confirm Password
+                                </label>
+                                <div className={styles.inputWrapper}>
+                                    <Lock size={20} className={styles.inputIcon} />
+                                    <input
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        id="confirmPassword"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        required
+                                        className={`${styles.input} ${confirmPassword ? styles.inputFilled : ''}`}
+                                        placeholder="Confirm new password"
+                                        autoComplete="new-password"
+                                        minLength={6}
+                                    />
+                                    <button
+                                        type="button"
+                                        className={styles.passwordToggle}
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        tabIndex={-1}
+                                    >
+                                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Error Message */}
+                            {error && (
+                                <div className={styles.errorContainer}>
+                                    <div className={styles.errorIcon}>!</div>
+                                    <p className={styles.errorText}>{error}</p>
+                                </div>
+                            )}
+
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={styles.submitButton}
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className={styles.buttonSpinner}></div>
+                                        <span>Updating...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Lock size={20} />
+                                        <span>Update Password</span>
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        {/* Back to Login */}
+                        <div className={styles.footer}>
+                            <Link
+                                href="/login"
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    color: '#0284c7',
+                                    textDecoration: 'none',
+                                    fontSize: '14px',
+                                    fontWeight: '600'
+                                }}
+                            >
+                                <ArrowLeft size={16} />
+                                Back to Login
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
