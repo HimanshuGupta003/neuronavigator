@@ -58,7 +58,9 @@ export async function POST(request: NextRequest) {
                 worker_id: user.id,
                 status: mood === 'good' ? 'green' : mood === 'bad' ? 'red' : 'yellow',
                 raw_transcript: rawTranscript,
-                processed_text: formattedNote,
+                formatted_note: formattedNote,           // AI note with markdown headers
+                formatted_summary: summary,               // Short summary
+                processed_text: formattedNote,           // Keep for backwards compatibility
                 tags: tags,
                 consumer_hours: consumerHours || null,
                 gps_lat: latitude || null,

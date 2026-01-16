@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Sparkles, Check, User, Loader2, Edit3, Play, Pause, RotateCcw, Send } from 'lucide-react';
+import { Mic, MicOff, Sparkles, Check, User, Loader2, Edit3, Play, Pause, RotateCcw, Send, AlertCircle, Clock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import styles from './record.module.css';
 
@@ -11,6 +11,7 @@ interface Client {
     id: string;
     full_name: string;
     client_goals: string | null;
+    ipe_goal: string | null;  // IPE Goal for DOR compliance
 }
 
 type ProcessingStep = 'idle' | 'recording' | 'recorded' | 'transcribing' | 'formatting' | 'ready' | 'saving' | 'saved';
@@ -24,6 +25,7 @@ export default function RecordNotePage() {
     const [selectedClient, setSelectedClient] = useState<string>('');
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(true);
+    const [hasActiveShift, setHasActiveShift] = useState<boolean | null>(null);  // null = checking, false = no shift, true = has shift
     
     // Recording state
     const [isRecording, setIsRecording] = useState(false);
@@ -58,6 +60,7 @@ export default function RecordNotePage() {
 
     useEffect(() => {
         loadClients();
+        checkActiveShift();
         
         // Cleanup audio URL on unmount
         return () => {
@@ -84,7 +87,7 @@ export default function RecordNotePage() {
             if (user) {
                 const { data } = await supabase
                     .from('clients')
-                    .select('id, full_name, client_goals')
+                    .select('id, full_name, client_goals, ipe_goal')
                     .eq('coach_id', user.id)
                     .order('full_name');
 
@@ -96,6 +99,28 @@ export default function RecordNotePage() {
             console.error('Failed to load clients:', error);
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function checkActiveShift() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data } = await supabase
+                    .from('shifts')
+                    .select('id')
+                    .eq('worker_id', user.id)
+                    .is('clock_out_at', null)
+                    .limit(1)
+                    .single();
+
+                setHasActiveShift(!!data);
+            } else {
+                setHasActiveShift(false);
+            }
+        } catch {
+            // No active shift found (expected when no shift)
+            setHasActiveShift(false);
         }
     }
 
@@ -288,6 +313,7 @@ export default function RecordNotePage() {
                     transcript: transcribeData.transcript,
                     clientName: selectedClientData?.full_name || 'Client',
                     clientGoals: selectedClientData?.client_goals || '',
+                    ipeGoal: selectedClientData?.ipe_goal || '',  // Pass IPE Goal for DOR compliance
                     mood: selectedMood,
                 }),
             });
@@ -428,6 +454,33 @@ export default function RecordNotePage() {
                 <p className={styles.subtitle}>Record a voice note for your client</p>
             </div>
 
+            {/* Block recording if no active shift */}
+            {hasActiveShift === false && (
+                <div className={styles.noShiftBlock}>
+                    <div className={styles.noShiftIcon}>
+                        <Clock size={48} />
+                    </div>
+                    <h2 className={styles.noShiftTitle}>Clock In Required</h2>
+                    <p className={styles.noShiftText}>
+                        You must clock in before recording notes. This ensures accurate time tracking for billing and EVV compliance.
+                    </p>
+                    <a href="/worker" className={styles.clockInLink}>
+                        <Play size={20} />
+                        Go to Dashboard to Clock In
+                    </a>
+                </div>
+            )}
+
+            {/* Show loading while checking shift status */}
+            {hasActiveShift === null && (
+                <div className={styles.loadingShift}>
+                    <Loader2 size={24} className={styles.spinner} />
+                    <span>Checking shift status...</span>
+                </div>
+            )}
+
+            {/* Only show recording interface if clocked in */}
+            {hasActiveShift === true && (
             <div className={styles.card}>
                 {/* Mood Selector */}
                 <div className={styles.moodSection}>
@@ -738,6 +791,7 @@ export default function RecordNotePage() {
                     </div>
                 )}
             </div>
+            )}
         </div>
     );
 }

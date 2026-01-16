@@ -30,6 +30,7 @@ interface Client {
     work_schedule: string | null;
     hours_authorized: number | null;
     se_service_provider: string | null;
+    ipe_goal: string | null;  // Individual Plan for Employment goal
     coach_id: string;
     created_at: string;
 }
@@ -93,6 +94,7 @@ export default function ClientsPage() {
         work_schedule: '',
         hours_authorized: '',
         se_service_provider: '',
+        ipe_goal: '',  // New IPE Goal field
     });
 
     useEffect(() => {
@@ -150,6 +152,7 @@ export default function ClientsPage() {
                     work_schedule: newClient.work_schedule || null,
                     hours_authorized: newClient.hours_authorized ? parseFloat(newClient.hours_authorized) : null,
                     se_service_provider: newClient.se_service_provider || null,
+                    ipe_goal: newClient.ipe_goal || null,  // IPE Goal
                     coach_id: user.id,
                 });
 
@@ -178,6 +181,7 @@ export default function ClientsPage() {
                 work_schedule: '',
                 hours_authorized: '',
                 se_service_provider: '',
+                ipe_goal: '',
             });
             setShowAddModal(false);
             loadClients();
@@ -422,7 +426,7 @@ export default function ClientsPage() {
                             <div className={styles.formSection}>
                                 <h3 className={styles.sectionTitle}>
                                     <Target size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-                                    Client Goals
+                                    Goals
                                 </h3>
                                 <div className={styles.inputGroup}>
                                     <label className={styles.inputLabel}>
@@ -434,6 +438,18 @@ export default function ClientsPage() {
                                         placeholder="E.g., Improve work speed, develop social skills, learn job tasks..."
                                         className={styles.textarea}
                                         rows={4}
+                                    />
+                                </div>
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.inputLabel}>
+                                        IPE Goal (Individual Plan for Employment)
+                                    </label>
+                                    <textarea
+                                        value={newClient.ipe_goal}
+                                        onChange={(e) => setNewClient({ ...newClient, ipe_goal: e.target.value })}
+                                        placeholder="E.g., Obtain competitive integrated employment in retail at minimum wage..."
+                                        className={styles.textarea}
+                                        rows={3}
                                     />
                                 </div>
                             </div>

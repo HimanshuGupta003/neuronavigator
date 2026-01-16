@@ -153,6 +153,26 @@
     animation: spin 1s linear infinite;
 }
 
+/* Location Error Message */
+.locationError {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.08) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    color: #dc2626;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.locationError svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -475,4 +495,271 @@
     .shiftTimer {
         font-size: 28px;
     }
+}
+
+/* Modal Overlay */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Shift Summary Modal */
+.shiftSummaryModal {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modalClose {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.modalClose:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #1e293b;
+}
+
+.summaryIcon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.summaryTitle {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 24px 0;
+}
+
+.summaryStats {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.summaryStat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.statLabel {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.statValue {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0284c7;
+}
+
+.summaryBtn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.summaryBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
+}
+
+/* Entry Modal */
+.entryModal {
+    background: white;
+    border-radius: 24px;
+    padding: 32px;
+    max-width: 540px;
+    width: 100%;
+    max-height: 85vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: scaleIn 0.3s ease;
+}
+
+.entryModalHeader {
+    flex-shrink: 0;
+    margin-bottom: 20px;
+    padding-right: 40px;
+}
+
+.entryModalTitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+}
+
+.entryModalMeta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.entryModalDate {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.entryMoodBadge {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.entryModalSections {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px;
+    margin-right: -8px;
+}
+
+/* Custom Scrollbar for Modal Sections */
+.entryModalSections::-webkit-scrollbar {
+    width: 6px;
+}
+
+.entryModalSections::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.entryModalSections::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+}
+
+.entryModalSections::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.sectionCard {
+    border-radius: 14px;
+    padding: 16px;
+    border-left: 4px solid;
+}
+
+.tasksSection {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.05) 100%);
+    border-left-color: #3b82f6;
+}
+
+.barriersSection {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.05) 100%);
+    border-left-color: #f59e0b;
+}
+
+.interventionsSection {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border-left-color: #a855f7;
+}
+
+.progressSection {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(22, 163, 74, 0.05) 100%);
+    border-left-color: #22c55e;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.sectionIcon {
+    font-size: 18px;
+}
+
+.sectionHeader h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.sectionContent {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.entryPlainContent {
+    background: rgba(241, 245, 249, 0.8);
+    border-radius: 16px;
+    padding: 20px;
+    font-size: 14px;
+    color: #334155;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.noContent {
+    color: #94a3b8;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+}
+
+.entryModalTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
 }

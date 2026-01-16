@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Mic, Clock, FileText, Play, Square, MapPin, AlertCircle, ArrowRight, Users } from 'lucide-react';
+import { Mic, Clock, FileText, Play, Square, MapPin, AlertCircle, ArrowRight, Users, X, ChevronDown } from 'lucide-react';
 import { Profile, Shift, Entry } from '@/lib/types';
 import Link from 'next/link';
 import styles from './worker.module.css';
@@ -16,6 +16,10 @@ export default function CoachDashboardPage() {
     const [loading, setLoading] = useState(true);
     const [shiftLoading, setShiftLoading] = useState(false);
     const [shiftDuration, setShiftDuration] = useState('0:00:00');
+    const [locationError, setLocationError] = useState<string | null>(null);
+    const [showShiftSummary, setShowShiftSummary] = useState(false);
+    const [shiftSummaryData, setShiftSummaryData] = useState<{ duration: string; entryCount: number } | null>(null);
+    const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
 
     useEffect(() => {
         loadDashboard();
@@ -87,7 +91,7 @@ export default function CoachDashboardPage() {
                 .select('*')
                 .eq('worker_id', user.id)
                 .order('created_at', { ascending: false })
-                .limit(5);
+                .limit(3);
 
             if (entriesData) {
                 setRecentEntries(entriesData as Entry[]);
@@ -101,26 +105,54 @@ export default function CoachDashboardPage() {
 
     const handleClockIn = async () => {
         setShiftLoading(true);
+        setLocationError(null);  // Clear any previous error
+        
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
+            // GPS is REQUIRED for EVV compliance
+            if (!navigator.geolocation) {
+                setLocationError('Location services are not available on this device. GPS is required to clock in.');
+                setShiftLoading(false);
+                return;
+            }
+
             let lat: number | null = null;
             let lng: number | null = null;
 
-            if (navigator.geolocation) {
-                try {
-                    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                        });
+            try {
+                const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 15000,  // Increased timeout
                     });
-                    lat = position.coords.latitude;
-                    lng = position.coords.longitude;
-                } catch (geoError) {
-                    console.warn('Failed to get location:', geoError);
+                });
+                lat = position.coords.latitude;
+                lng = position.coords.longitude;
+            } catch (geoError: unknown) {
+                // GPS permission denied or failed - BLOCK clock-in
+                const error = geoError as GeolocationPositionError;
+                let errorMessage = 'Unable to get your location. ';
+                
+                if (error.code === 1) {
+                    errorMessage = 'Location permission denied. Please enable location access in your browser settings to clock in.';
+                } else if (error.code === 2) {
+                    errorMessage = 'Unable to determine your location. Please ensure GPS is enabled and try again.';
+                } else if (error.code === 3) {
+                    errorMessage = 'Location request timed out. Please try again in an area with better GPS signal.';
                 }
+                
+                setLocationError(errorMessage);
+                setShiftLoading(false);
+                return;  // BLOCK clock-in
+            }
+
+            // Verify we actually got coordinates
+            if (lat === null || lng === null) {
+                setLocationError('Could not obtain GPS coordinates. Please enable location services and try again.');
+                setShiftLoading(false);
+                return;
             }
 
             const { data, error } = await supabase
@@ -138,6 +170,7 @@ export default function CoachDashboardPage() {
             setActiveShift(data as Shift);
         } catch (error) {
             console.error('Failed to clock in:', error);
+            setLocationError('Failed to clock in. Please try again.');
         } finally {
             setShiftLoading(false);
         }
@@ -146,23 +179,49 @@ export default function CoachDashboardPage() {
     const handleClockOut = async () => {
         if (!activeShift) return;
         setShiftLoading(true);
+        setLocationError(null);
+        
         try {
+            // GPS is REQUIRED for EVV compliance
+            if (!navigator.geolocation) {
+                setLocationError('Location services are not available. GPS is required to clock out.');
+                setShiftLoading(false);
+                return;
+            }
+
             let lat: number | null = null;
             let lng: number | null = null;
 
-            if (navigator.geolocation) {
-                try {
-                    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                        });
+            try {
+                const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
                     });
-                    lat = position.coords.latitude;
-                    lng = position.coords.longitude;
-                } catch (geoError) {
-                    console.warn('Failed to get location:', geoError);
+                });
+                lat = position.coords.latitude;
+                lng = position.coords.longitude;
+            } catch (geoError: unknown) {
+                const error = geoError as GeolocationPositionError;
+                let errorMessage = 'Unable to get your location. ';
+                
+                if (error.code === 1) {
+                    errorMessage = 'Location permission denied. Please enable location access to clock out.';
+                } else if (error.code === 2) {
+                    errorMessage = 'Unable to determine your location. Please ensure GPS is enabled.';
+                } else if (error.code === 3) {
+                    errorMessage = 'Location request timed out. Please try again.';
                 }
+                
+                setLocationError(errorMessage);
+                setShiftLoading(false);
+                return;
+            }
+
+            if (lat === null || lng === null) {
+                setLocationError('Could not obtain GPS coordinates. Please enable location services.');
+                setShiftLoading(false);
+                return;
             }
 
             const { error } = await supabase
@@ -175,9 +234,26 @@ export default function CoachDashboardPage() {
                 .eq('id', activeShift.id);
 
             if (error) throw error;
+            
+            // Count entries created during this shift
+            const { count: entryCount } = await supabase
+                .from('entries')
+                .select('*', { count: 'exact', head: true })
+                .eq('worker_id', (await supabase.auth.getUser()).data.user?.id)
+                .gte('created_at', activeShift.clock_in_at);
+            
+            // Show shift summary modal
+            setShiftSummaryData({
+                duration: shiftDuration,
+                entryCount: entryCount || 0
+            });
+            setShowShiftSummary(true);
+            
             setActiveShift(null);
+            setLocationError(null);
         } catch (error) {
             console.error('Failed to clock out:', error);
+            setLocationError('Failed to clock out. Please try again.');
         } finally {
             setShiftLoading(false);
         }
@@ -260,6 +336,14 @@ export default function CoachDashboardPage() {
                         </>
                     )}
                 </button>
+            )}
+
+            {/* Location Error Message */}
+            {locationError && (
+                <div className={styles.locationError}>
+                    <AlertCircle size={20} />
+                    <span>{locationError}</span>
+                </div>
             )}
 
             {/* Active Shift Card */}
@@ -363,7 +447,11 @@ export default function CoachDashboardPage() {
                     <div className={styles.entryList}>
                         {recentEntries.map((entry) => (
                             <div key={entry.id} className={styles.entryItem}>
-                                <div className={styles.entryHeader}>
+                                <div 
+                                    className={styles.entryHeader}
+                                    onClick={() => setSelectedEntry(entry)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <div className={styles.entryClientRow}>
                                         <span className={styles.entryClientName}>
                                             {entry.client_name || 'General Note'}
@@ -376,7 +464,7 @@ export default function CoachDashboardPage() {
                                         {getMoodEmoji(entry.mood)}
                                     </span>
                                 </div>
-                                <p className={styles.entryText}>
+                                <p className={styles.entryText} onClick={() => setSelectedEntry(entry)} style={{ cursor: 'pointer' }}>
                                     {cleanNoteText(entry.formatted_summary || entry.summary || entry.processed_text || entry.raw_transcript || '')}
                                 </p>
                                 {entry.tags && entry.tags.length > 0 && (
@@ -391,6 +479,108 @@ export default function CoachDashboardPage() {
                     </div>
                 )}
             </div>
+            
+            {/* Shift Summary Modal */}
+            {showShiftSummary && shiftSummaryData && (
+                <div className={styles.modalOverlay} onClick={() => setShowShiftSummary(false)}>
+                    <div className={styles.shiftSummaryModal} onClick={(e) => e.stopPropagation()}>
+                        <button className={styles.modalClose} onClick={() => setShowShiftSummary(false)}>
+                            <X size={20} />
+                        </button>
+                        <div className={styles.summaryIcon}>✅</div>
+                        <h2 className={styles.summaryTitle}>Shift Complete!</h2>
+                        <div className={styles.summaryStats}>
+                            <div className={styles.summaryStat}>
+                                <span className={styles.statLabel}>Total Time</span>
+                                <span className={styles.statValue}>{shiftSummaryData.duration}</span>
+                            </div>
+                            <div className={styles.summaryStat}>
+                                <span className={styles.statLabel}>Notes Recorded</span>
+                                <span className={styles.statValue}>{shiftSummaryData.entryCount}</span>
+                            </div>
+                        </div>
+                        <button className={styles.summaryBtn} onClick={() => setShowShiftSummary(false)}>
+                            Done
+                        </button>
+                    </div>
+                </div>
+            )}
+            
+            {/* Entry Details Modal */}
+            {selectedEntry && (
+                <div className={styles.modalOverlay} onClick={() => setSelectedEntry(null)}>
+                    <div className={styles.entryModal} onClick={(e) => e.stopPropagation()}>
+                        <button className={styles.modalClose} onClick={() => setSelectedEntry(null)}>
+                            <X size={20} />
+                        </button>
+                        
+                        {/* Header */}
+                        <div className={styles.entryModalHeader}>
+                            <h2 className={styles.entryModalTitle}>{selectedEntry.client_name || 'General Note'}</h2>
+                            <div className={styles.entryModalMeta}>
+                                <p className={styles.entryModalDate}>
+                                    {new Date(selectedEntry.created_at).toLocaleString()}
+                                </p>
+                                <span className={styles.entryMoodBadge}>
+                                    {(selectedEntry.status === 'green' || selectedEntry.mood === 'green' || selectedEntry.mood === 'good') ? '😊' :
+                                     (selectedEntry.status === 'red' || selectedEntry.mood === 'red' || selectedEntry.mood === 'bad') ? '😟' : '😐'}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        {/* Parsed Content Sections */}
+                        <div className={styles.entryModalSections}>
+                            {(() => {
+                                const noteText = selectedEntry.formatted_note || selectedEntry.processed_text || '';
+                                
+                                if (!noteText) {
+                                    return <p className={styles.noContent}>{selectedEntry.summary || 'No content available'}</p>;
+                                }
+                                
+                                // Parse sections from markdown
+                                const sections: { header: string; content: string; icon: string; color: string }[] = [];
+                                const sectionPatterns = [
+                                    { regex: /\*\*Tasks?\s*&?\s*Productivity:?\*\*\s*([\s\S]*?)(?=\*\*|$)/i, header: 'Tasks & Productivity', icon: '📋', color: 'tasks' },
+                                    { regex: /\*\*Barriers?\s*&?\s*Behaviors?:?\*\*\s*([\s\S]*?)(?=\*\*|$)/i, header: 'Barriers & Behaviors', icon: '⚠️', color: 'barriers' },
+                                    { regex: /\*\*Interventions?:?\*\*\s*([\s\S]*?)(?=\*\*|$)/i, header: 'Interventions', icon: '🛠️', color: 'interventions' },
+                                    { regex: /\*\*Progress\s*(?:on\s*)?Goals?:?\*\*\s*([\s\S]*?)(?=\*\*|$)/i, header: 'Progress on Goals', icon: '📈', color: 'progress' },
+                                ];
+                                
+                                sectionPatterns.forEach(({ regex, header, icon, color }) => {
+                                    const match = noteText.match(regex);
+                                    if (match && match[1]?.trim()) {
+                                        sections.push({ header, content: match[1].trim(), icon, color });
+                                    }
+                                });
+                                
+                                if (sections.length === 0) {
+                                    // No sections found, show as plain text
+                                    return <p className={styles.entryPlainContent}>{noteText.replace(/\*\*/g, '')}</p>;
+                                }
+                                
+                                return sections.map((section, i) => (
+                                    <div key={i} className={`${styles.sectionCard} ${styles[section.color + 'Section']}`}>
+                                        <div className={styles.sectionHeader}>
+                                            <span className={styles.sectionIcon}>{section.icon}</span>
+                                            <h4>{section.header}</h4>
+                                        </div>
+                                        <p className={styles.sectionContent}>{section.content}</p>
+                                    </div>
+                                ));
+                            })()}
+                        </div>
+                        
+                        {/* Tags */}
+                        {selectedEntry.tags && selectedEntry.tags.length > 0 && (
+                            <div className={styles.entryModalTags}>
+                                {selectedEntry.tags.map((tag, i) => (
+                                    <span key={i} className={styles.entryTag}>{tag}</span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
