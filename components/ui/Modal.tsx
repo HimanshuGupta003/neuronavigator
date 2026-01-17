@@ -12,6 +12,7 @@ interface ModalProps {
     subtitle?: string;
     message: string;
     warningText?: string;
+    disclaimerText?: string;
     confirmText?: string;
     cancelText?: string;
     variant?: 'sos' | 'success' | 'warning';
@@ -26,6 +27,7 @@ export default function Modal({
     subtitle,
     message,
     warningText,
+    disclaimerText,
     confirmText = 'Confirm',
     cancelText = 'Cancel',
     variant = 'sos',
@@ -78,6 +80,10 @@ export default function Modal({
                             <AlertCircle size={18} className={styles.warningIcon} />
                             <p className={styles.warningText}>{warningText}</p>
                         </div>
+                    )}
+
+                    {disclaimerText && (
+                        <p className={styles.disclaimer}>{disclaimerText}</p>
                     )}
                 </div>
 

@@ -132,6 +132,22 @@
     margin: 0;
 }
 
+.disclaimer {
+    margin: 16px 0 0 0;
+    padding: 12px 14px;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: #92400e;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
 .footer {
     padding: 16px 24px 24px;
     display: flex;

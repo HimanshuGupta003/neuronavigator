@@ -299,6 +299,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 subtitle="SOS Panic Button"
                 message="This will immediately send an SMS to your supervisor with your current GPS location."
                 warningText="Only use this in a real emergency situation."
+                disclaimerText="⚠️ Not a replacement for 911. In life-threatening emergency, dial 911."
                 confirmText="Send SOS Alert"
                 cancelText="Cancel"
                 variant="sos"

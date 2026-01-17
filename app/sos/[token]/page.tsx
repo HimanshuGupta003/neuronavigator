@@ -219,6 +219,9 @@ export default function ClientSOSPage({ params }: PageProps) {
                     <p className={styles.confirmText}>
                         This will immediately notify your emergency contacts with your location.
                     </p>
+                    <p className={styles.confirmDisclaimer}>
+                        ⚠️ Not a replacement for 911. In life-threatening emergency, dial 911.
+                    </p>
                     <div className={styles.confirmButtons}>
                         <button className={styles.cancelButton} onClick={handleCancel}>
                             Cancel
@@ -263,6 +266,14 @@ export default function ClientSOSPage({ params }: PageProps) {
             <p className={styles.footer}>
                 Press the button above if you need immediate assistance
             </p>
+
+            {/* Legal Disclaimer */}
+            <div className={styles.disclaimer}>
+                <span className={styles.disclaimerIcon}>⚠️</span>
+                <p className={styles.disclaimerText}>
+                    Not a replacement for 911. In a life-threatening emergency, always dial 911.
+                </p>
+            </div>
         </div>
     );
 }

@@ -346,6 +346,12 @@ export default function CoachDashboardPage() {
                 </div>
             )}
 
+            {/* GPS Privacy Disclaimer */}
+            <p className={styles.gpsDisclaimer}>
+                <MapPin size={12} />
+                Location data is collected ONLY during active shifts for EVV compliance.
+            </p>
+
             {/* Active Shift Card */}
             {activeShift && (
                 <div className={styles.shiftCard}>

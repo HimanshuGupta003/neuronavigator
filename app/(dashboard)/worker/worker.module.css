@@ -183,6 +183,22 @@
     }
 }
 
+/* GPS Privacy Disclaimer */
+.gpsDisclaimer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #64748b;
+    margin: 16px 0 24px 0;
+    text-align: center;
+}
+
+.gpsDisclaimer svg {
+    color: #94a3b8;
+}
+
 /* Quick Actions */
 .actionsGrid {
     display: grid;

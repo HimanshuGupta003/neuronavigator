@@ -249,6 +249,48 @@
     color: #64748b;
 }
 
+/* Mobile Responsive - Client Cards */
+@media (max-width: 640px) {
+    .clientItem {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .clientItem > :first-child {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .clientAvatar {
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
+    }
+
+    .clientName {
+        font-size: 15px;
+    }
+
+    .clientMeta {
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .metaItem {
+        font-size: 12px;
+    }
+
+    .clientItem button,
+    .clientItem a {
+        width: 100%;
+        justify-content: center;
+        margin-top: 4px;
+    }
+}
+
 /* Modal */
 .modalOverlay {
     position: fixed;
@@ -983,4 +1025,32 @@ input[type="date"].input::-webkit-calendar-picker-indicator:hover {
     .revokeButton {
         flex: 1;
     }
+}
+
+/* SOS Reminder Note - Professional Warning Banner */
+.sosReminder {
+    margin: 0 0 16px 0;
+    padding: 12px 14px;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.sosReminderIcon {
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.sosReminderText {
+    margin: 0;
+    font-size: 13px;
+    color: #92400e;
+    font-weight: 500;
+    line-height: 1.4;
 }

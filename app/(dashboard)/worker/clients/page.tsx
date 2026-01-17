@@ -750,6 +750,14 @@ export default function ClientsPage() {
                                 Scan to open • Then tap <Share size={12} style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px' }} /> and &quot;Add to Home Screen&quot;
                             </p>
                         </div>
+
+                        {/* 911 Reminder Note */}
+                        <div className={styles.sosReminder}>
+                            <span className={styles.sosReminderIcon}>⚠️</span>
+                            <p className={styles.sosReminderText}>
+                                Remind client: This is not a replacement for 911.
+                            </p>
+                        </div>
                         
                         <div className={styles.linkBox}>
                             <input 

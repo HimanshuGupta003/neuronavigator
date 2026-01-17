@@ -340,12 +340,33 @@
         font-size: 16px;
     }
 
+    .sosButton {
+        padding: 10px;
+        width: 44px;
+        height: 44px;
+        min-height: 44px;
+        justify-content: center;
+    }
+
     .sosButton span {
         display: none;
     }
 
-    .sosButton {
-        padding: 10px;
-        min-width: 48px;
+    .userSection {
+        gap: 8px;
+    }
+
+    .userInfo {
+        padding: 4px 8px;
+    }
+
+    .userAvatar {
+        width: 28px;
+        height: 28px;
+    }
+
+    .logoutButton {
+        width: 36px;
+        height: 36px;
     }
 }
